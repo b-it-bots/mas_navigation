@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+        
+  <node pkg="mcr_relative_movements" type="relative_movements_node" name="relative_movements" ns="mcr_navigation" output="screen" />
+
+</launch>
