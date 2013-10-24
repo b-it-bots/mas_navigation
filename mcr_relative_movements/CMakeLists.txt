@@ -32,6 +32,7 @@ include_directories(
   common/include
   ros/include
   ${Eigen_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(relative_movements_node
