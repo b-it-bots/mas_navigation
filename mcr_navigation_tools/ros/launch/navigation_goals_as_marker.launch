@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
 <launch>
-	<node pkg="mcr_navigation_goal_marker" type="navigation_goals_as_marker.py" name="mcr_navigation_goals_as_marker" respawn="false" output="screen" />
+	<node pkg="mcr_navigation_goal_marker" type="navigation_goals_as_marker" name="mcr_navigation_goals_as_marker" respawn="false" output="screen" />
 </launch>
