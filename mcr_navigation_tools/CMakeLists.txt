@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mcr_navigation_goal_marker)
+project(mcr_navigation_tools)
 find_package(catkin REQUIRED)
 
 catkin_package()

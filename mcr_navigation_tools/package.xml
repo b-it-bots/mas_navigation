@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>mcr_navigation_goal_marker</name>
-  <version>0.0.1</version>
-  <description>displays navigation goals as visualization marker in Rviz</description>
+  <name>mcr_navigation_tools</name>
+  <version>0.0.2</version>
+  <description>several base navigation tools</description>
 
   <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
   
