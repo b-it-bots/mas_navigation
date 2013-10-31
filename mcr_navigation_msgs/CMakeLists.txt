@@ -12,6 +12,7 @@ find_package(catkin REQUIRED
 add_service_files(
   FILES
     MoveRelative.srv
+    GetBasePose.srv
 )
 
 generate_messages(
