@@ -27,7 +27,7 @@ if (__name__ == "__main__"):
 
 			single_marker.header.frame_id = single_marker_text.header.frame_id = "/map"
 			single_marker.header.stamp = single_marker_text.header.stamp = rospy.Time.now()
-			single_marker.ns = single_marker_text.ns = "locations"
+			single_marker.ns = single_marker_text.ns = "base navigation goals"
 			single_marker.action = single_marker_text.action = 0
 
 			single_marker.id = counter
@@ -50,9 +50,9 @@ if (__name__ == "__main__"):
 
 			single_marker_text.text = item
 
-			single_marker.scale.x = 0.5
-			single_marker.scale.y = 0.5
-			single_marker.scale.z = 0.5
+			single_marker.scale.x = 0.6
+			single_marker.scale.y = 0.05
+			single_marker.scale.z = 0.0
 			single_marker.color.r = 1.0
 			single_marker.color.g = 0.0
 			single_marker.color.b = 0.0
