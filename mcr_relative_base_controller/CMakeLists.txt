@@ -37,6 +37,18 @@ target_link_libraries(relative_base_controller_node
   ${catkin_LIBRARIES}
 )
 
+
+add_executable(relative_base_controller_mockup
+  ros/mockup/relative_base_controller_mockup.cpp 
+)
+add_dependencies(relative_base_controller_mockup 
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(relative_base_controller_mockup
+  ${catkin_LIBRARIES}
+)
+
+
 install(TARGETS relative_base_controller_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
