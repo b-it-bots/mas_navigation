@@ -3,8 +3,7 @@
   <name>mcr_relative_base_controller</name>
   <version>0.1.0</version>
   <description>
-    This package consists of the relative_base_controller node
-    which moves the robot base relative to its current position. The node listens for
+    This controller moves the robot base relative to its current position. The node listens for
     a start command and relative movement command (x, y translation and rotation about z)
     and moves the base by the desired amount while monitoring the odometry.
   </description>
