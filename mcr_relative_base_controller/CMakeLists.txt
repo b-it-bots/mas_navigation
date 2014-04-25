@@ -39,9 +39,9 @@ target_link_libraries(relative_base_controller_node
 
 
 add_executable(relative_base_controller_mockup
-  ros/mockup/relative_base_controller_mockup.cpp 
+  ros/mockup/relative_base_controller_mockup.cpp
 )
-add_dependencies(relative_base_controller_mockup 
+add_dependencies(relative_base_controller_mockup
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(relative_base_controller_mockup
