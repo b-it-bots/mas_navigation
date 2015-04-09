@@ -2,6 +2,7 @@
 #define RELATIVE_BASE_CONTROLLER_H_
 
 #include <nav_msgs/Odometry.h>
+#include <tf/transform_listener.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
@@ -145,7 +146,9 @@ class BaseMotionController
 
     ros::Publisher move_done_pub_; /// publisher for event_out
 
-    ros::NodeHandle nh_; /// node handle
+    ros::NodeHandle nh_; /// node handle 
+
+    tf::TransformListener *tf_listener_;
 
     dynamic_reconfigure::Server<mcr_relative_base_controller::RelativeBaseControllerConfig> dynamic_reconfigure_server_; /// dynamic reconfigure server
 };

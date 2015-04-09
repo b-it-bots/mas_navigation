@@ -24,6 +24,8 @@ BaseMotionController::BaseMotionController(ros::NodeHandle &n) : nh_(n)
 
   move_command_sub_ = nh_.subscribe("command", 1, &BaseMotionController::moveBaseCallback, this);
   trigger_sub_ = nh_.subscribe("event_in", 1, &BaseMotionController::triggerCallback, this);
+  
+  tf_listener_ = new tf::TransformListener();
 }
 
 BaseMotionController::~BaseMotionController()
@@ -36,10 +38,9 @@ BaseMotionController::~BaseMotionController()
 void BaseMotionController::moveBaseCallback(const geometry_msgs::PoseStamped &msg)
 {
   geometry_msgs::PoseStamped relative_move_command;
-  tf::TransformListener tf_listener;
   try {
-      tf_listener.waitForTransform(base_frame_tf_, msg.header.frame_id, msg.header.stamp, ros::Duration(0.1));
-      tf_listener.transformPose(base_frame_tf_, msg, relative_move_command);
+      tf_listener_->waitForTransform(base_frame_tf_, msg.header.frame_id, msg.header.stamp, ros::Duration(0.1));
+      tf_listener_->transformPose(base_frame_tf_, msg, relative_move_command);
   }catch (std::exception &e) {
     ROS_ERROR_STREAM("Could not transform pose: " << e.what());
 
@@ -185,7 +186,6 @@ bool BaseMotionController::translateRelative(double x_trans, double y_trans)
   }
   odom_received_ = false;
 
-  tf::TransformListener tf_listener;
   tf::StampedTransform robot_transform;
   bool tf_received = false;
   // wait for transform
@@ -194,7 +194,7 @@ bool BaseMotionController::translateRelative(double x_trans, double y_trans)
   {
     try
     {
-      tf_listener.lookupTransform(world_frame_tf_, base_frame_tf_, ros::Time(0), robot_transform);
+      tf_listener_->lookupTransform(world_frame_tf_, base_frame_tf_, ros::Time(0), robot_transform);
       tf_received = true;
     }
     catch(tf::TransformException &ex)
