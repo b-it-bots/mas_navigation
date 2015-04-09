@@ -3,7 +3,9 @@
 
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Quaternion.h>
 #include <dynamic_reconfigure/server.h>
 #include <std_msgs/String.h>
 #include <mcr_relative_base_controller/RelativeBaseControllerConfig.h>
@@ -18,7 +20,7 @@
  * The node publishes "e_done" to the topic ~/event_out when the relative movement is complete
  *
  * Behaviour:
- * If both translation and rotation are set in the Twist message, order of operation will be decided 
+ * If both translation and rotation are set in the Twist message, order of operation will be decided
  * by the "rotation_before_translation" parameter (dynamic reconfigure)
  *
  * If a Twist message is sent while the base is moving, it will be ignored
@@ -35,18 +37,18 @@ class BaseMotionController
      * Constructor - initializes publishers, subscribers and flags
      */
     BaseMotionController(ros::NodeHandle &n);
-    
+
     /**
      * Destructor - shuts down subscribers
      */
     virtual ~BaseMotionController();
- 
+
     /**
      * Callback for ~/command topic
      * Sets relative movement variables (x_trans_, y_trans_, z_rot_)
      * Sets new_command_sent_ flag to true
      */
-    void moveBaseCallback(const geometry_msgs::Twist &relative_move_command);
+    void moveBaseCallback(const geometry_msgs::PoseStamped &relative_move_command);
     /**
      * Callback from ~/event_in topic
      * if event is e_start, sets start_relative_movement_ flag to true, false otherwise
@@ -57,12 +59,14 @@ class BaseMotionController
      * Callback for dynamic reconfigure
      */
     void dynamicReconfigCallback(mcr_relative_base_controller::RelativeBaseControllerConfig &config, uint32_t level);
-        
+
     /**
      * Callback for /odom topic
      * sets values of x_current_, y_current_ and theta_current_
      */
     void odomCallback(const nav_msgs::Odometry &Odom);
+
+    double getYaw(const geometry_msgs::Quaternion &q);
 
     /**
      * Main running loop
@@ -87,7 +91,7 @@ class BaseMotionController
      * checks whether current is within 'tolerance_' of goal
      */
     bool isMovementDone(double goal, double current);
-    
+
     /*
      * calculates angular distance between the two angles in radians
      */
@@ -120,11 +124,11 @@ class BaseMotionController
     std::string base_frame_tf_; /// base link tf
 
     /// set true if odom readings have been recieved
-    bool odom_received_; 
-    
+    bool odom_received_;
+
     /// set true if current relative movement is complete
     bool done_moving_;
-    
+
     /// set true if "start" trigger has been received
     bool start_relative_movement_;
 
@@ -136,7 +140,7 @@ class BaseMotionController
 
     ros::Publisher base_velocities_pub_; /// base velocity publisher
     ros::Subscriber move_command_sub_; /// subscriber for relative movement command
-    ros::Subscriber trigger_sub_; /// subscriber for start/stop trigger 
+    ros::Subscriber trigger_sub_; /// subscriber for start/stop trigger
     ros::Subscriber base_odom_sub_; /// odom subscriber
 
     ros::Publisher move_done_pub_; /// publisher for event_out
