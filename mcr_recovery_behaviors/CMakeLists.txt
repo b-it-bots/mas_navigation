@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(clear_costmap_recovery)
+project(mcr_recovery_behaviors)
 
 find_package(catkin REQUIRED
         COMPONENTS
@@ -23,7 +23,7 @@ add_definitions(${EIGEN_DEFINITIONS})
 
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES clear_costmap_recovery
+    LIBRARIES force_field_recovery
     CATKIN_DEPENDS
         costmap_2d
         nav_core
@@ -32,34 +32,15 @@ catkin_package(
         tf
 )
 
-add_library(clear_costmap_recovery src/clear_costmap_recovery.cpp)
-target_link_libraries(clear_costmap_recovery ${catkin_LIBRARIES})
+add_library(force_field_recovery src/force_field_recovery.cpp)
+target_link_libraries(force_field_recovery ${catkin_LIBRARIES})
 
-
-## Configure Tests
-if(CATKIN_ENABLE_TESTING)
-  # Find package test dependencies
-  find_package(rostest REQUIRED)
-
-  # Add the test folder to the include directories
-  include_directories(test)
-
-  include_directories(${GTEST_INCLUDE_DIRS})
-  link_directories(${GTEST_LIBRARY_DIRS})
-
-  # Create targets for test executables
-  add_rostest_gtest(clear_tester test/clear_tests.launch test/clear_tester.cpp)
-  add_dependencies(tests clear_tester ${catkin_LIBRARIES})
-  target_link_libraries(clear_tester clear_costmap_recovery ${GTEST_LIBRARIES})
-endif()
-
-
-install(TARGETS clear_costmap_recovery
+install(TARGETS force_field_recovery
        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        )
 
-install(FILES ccr_plugin.xml
+install(FILES ffr_plugin.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
