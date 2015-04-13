@@ -26,46 +26,49 @@
 #include <pluginlib/class_list_macros.h>
 #include <vector>
 
-namespace force_field_recovery{
-  /**
-   * @class ForceFieldRecovery
-   * @brief A recovery behavior that moves the base away from obstacles
-   */
-  class ForceFieldRecovery : public nav_core::RecoveryBehavior {
-    public:
-      /**
-       * @brief  Constructor, make sure to call initialize in addition to actually initialize the object
-       * @param  
-       * @return 
-       */
-      ForceFieldRecovery();
+namespace force_field_recovery
+{
+	/**
+	* @class ForceFieldRecovery
+	* @brief A recovery behavior that moves the base away from obstacles
+	*/
+	class ForceFieldRecovery : public nav_core::RecoveryBehavior 
+	{
+		public:
+		/**
+		* @brief  Constructor, make sure to call initialize in addition to actually initialize the object
+		* @param  
+		* @return 
+		*/
+		ForceFieldRecovery();
 
-      /**
-       * @brief  Initialization function for the ForceField recovery behavior
-       * @param tf A pointer to a transform listener
-       * @param global_costmap A pointer to the global_costmap used by the navigation stack 
-       * @param local_costmap A pointer to the local_costmap used by the navigation stack 
-       */
-      void initialize(std::string name, tf::TransformListener* tf, 
-          costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap);
+		/**
+		* @brief  Initialization function for the ForceField recovery behavior
+		* @param tf A pointer to a transform listener
+		* @param global_costmap A pointer to the global_costmap used by the navigation stack 
+		* @param local_costmap A pointer to the local_costmap used by the navigation stack 
+		*/
+		void initialize(std::string name, tf::TransformListener* tf, 
+			costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap);
 
-      /**
-       * @brief  Run the ForceFieldRecovery recovery behavior. 
-	   * 1. transform occupied cells into vectors
-	   * 2. sum all vectors to get the resultant
-	   * 3. move the base into opposite direction from the resultant
-       */
-      void runBehavior();
+		/**
+		* @brief  Run the ForceFieldRecovery recovery behavior. 
+		* 1. transform occupied cells into vectors
+		* 2. sum all vectors to get the resultant
+		* 3. move the base into opposite direction from the resultant
+		*/
+		void runBehavior();
 
-    private:
-      void clear(costmap_2d::Costmap2DROS* costmap);      
-      void clearMap(boost::shared_ptr<costmap_2d::CostmapLayer> costmap, double pose_x, double pose_y);
-      costmap_2d::Costmap2DROS* global_costmap_, *local_costmap_;
-      std::string name_;
-      tf::TransformListener* tf_;
-      bool initialized_;
-      double reset_distance_;
-      std::set<std::string> clearable_layers_; ///< Layer names which will be cleared.
-  };
+		private:
+		void clear(costmap_2d::Costmap2DROS* costmap);      
+		void clearMap(boost::shared_ptr<costmap_2d::CostmapLayer> costmap, double pose_x, double pose_y);
+		costmap_2d::Costmap2DROS* global_costmap_, *local_costmap_;
+		std::string name_;
+		tf::TransformListener* tf_;
+		bool initialized_;
+		double reset_distance_;
+		std::set<std::string> clearable_layers_; ///< Layer names which will be cleared.
+	};
 };
+
 #endif  
