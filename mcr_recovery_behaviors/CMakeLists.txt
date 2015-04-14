@@ -35,16 +35,16 @@ catkin_package(
 add_library(force_field_recovery src/force_field_recovery.cpp)
 target_link_libraries(force_field_recovery ${catkin_LIBRARIES})
 
-install(TARGETS force_field_recovery
-       ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-       LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-       )
+#install(TARGETS force_field_recovery
+#       ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#       LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#       )
 
-install(FILES ffr_plugin.xml
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+#install(FILES plugins.xml
+#    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+#)
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  PATTERN ".svn" EXCLUDE
-)
+#install(DIRECTORY include/${PROJECT_NAME}/
+#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#  PATTERN ".svn" EXCLUDE
+#)

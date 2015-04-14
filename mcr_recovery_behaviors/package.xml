@@ -10,29 +10,28 @@
 
     </description>
     
-    <maintainer email="olima_84@yahoo.com">Oscar Lima</maintainer>
-    <license>GPLv3</license>
-	
+	<maintainer email="olima_84@yahoo.com">Oscar Lima</maintainer>
+	<license>GPLv3</license>
 	<author email="olima_84@yahoo.com">Oscar Lima</author>
-	
+
     <url>https://github.com/mas-group/robocup-at-work</url>
 
     <buildtool_depend>catkin</buildtool_depend>
     
 	<build_depend>roscpp</build_depend>
-    <build_depend>tf</build_depend>
-    <build_depend>costmap_2d</build_depend>
-    <build_depend>nav_core</build_depend>
-    <build_depend>pluginlib</build_depend>
-    <build_depend>eigen</build_depend>
-    <build_depend>cmake_modules</build_depend>
-    
-    <run_depend>roscpp</run_depend>
-    <run_depend>tf</run_depend>
-    <run_depend>costmap_2d</run_depend>
-    <run_depend>nav_core</run_depend>
-    <run_depend>pluginlib</run_depend>
-    <run_depend>eigen</run_depend>
+	<build_depend>tf</build_depend>
+	<build_depend>costmap_2d</build_depend>
+	<build_depend>nav_core</build_depend>
+	<build_depend>pluginlib</build_depend>
+	<build_depend>eigen</build_depend>
+	<build_depend>cmake_modules</build_depend>
+	
+	<run_depend>roscpp</run_depend>
+	<run_depend>tf</run_depend>
+	<run_depend>costmap_2d</run_depend>
+	<run_depend>nav_core</run_depend>
+	<run_depend>pluginlib</run_depend>
+	<run_depend>eigen</run_depend>
     
     <export>
         <nav_core plugin="${prefix}/plugins.xml" />
