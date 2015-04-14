@@ -1,0 +1,7 @@
+<library path="lib/libforce_field_recovery">
+  <class name="force_field_recovery/ForceFieldRecovery" type="force_field_recovery::ForceFieldRecovery" base_class_type="nav_core::RecoveryBehavior">
+    <description>
+      A recovery behavior that moves away from obstacles.
+    </description>
+  </class>
+</library>

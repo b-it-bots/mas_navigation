@@ -1,20 +1,26 @@
 #include <force_field_recovery/force_field_recovery.h>
 
 //register this planner as a RecoveryBehavior plugin
-PLUGINLIB_DECLARE_CLASS(force_field_recovery, ClearCostmapRecovery, force_field_recovery::ForceFieldRecovery, nav_core::RecoveryBehavior)
+PLUGINLIB_DECLARE_CLASS(force_field_recovery, ForceFieldRecovery, force_field_recovery::ForceFieldRecovery, nav_core::RecoveryBehavior)
 
 using costmap_2d::NO_INFORMATION;
 
 namespace force_field_recovery 
 {
 	ForceFieldRecovery::ForceFieldRecovery(): global_costmap_(NULL), local_costmap_(NULL), 
-	tf_(NULL), initialized_(false) {} 
+	tf_(NULL), initialized_(false) 
+	{
+		//empty constructor
+	}
 
 	void ForceFieldRecovery::initialize(std::string name, tf::TransformListener* tf,
 		costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap)
 	{
 		if(!initialized_)
 		{
+			//initialization, this code will be executed only once
+			
+			//receiving move_base variables and copying them over to class variables
 			name_ = name;
 			tf_ = tf;
 			global_costmap_ = global_costmap;
@@ -31,7 +37,7 @@ namespace force_field_recovery
 
 			for(unsigned i=0; i < clearable_layers.size(); i++) 
 			{
-				ROS_INFO("Recovery behavior will clear layer %s", clearable_layers[i].c_str());
+				ROS_INFO("RRRecovery behavior will clear layer %s", clearable_layers[i].c_str());
 				clearable_layers_.insert(clearable_layers[i]);
 			}
 
