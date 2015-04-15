@@ -26,6 +26,15 @@
 #include <pluginlib/class_list_macros.h>
 #include <vector>
 
+#include <costmap_2d/costmap_2d.h>
+
+//for transforming costmap occupied cells into pointcloud
+#include <pcl/point_types.h>
+#include <pcl_conversions/pcl_conversions.h>
+
+//for moving the mobile base (publish in cmd_vel)
+#include <geometry_msgs/Twist.h>
+
 namespace force_field_recovery
 {
 	/**
@@ -60,14 +69,22 @@ namespace force_field_recovery
 		void runBehavior();
 
 		private:
-		void clear(costmap_2d::Costmap2DROS* costmap);      
-		void clearMap(boost::shared_ptr<costmap_2d::CostmapLayer> costmap, double pose_x, double pose_y);
-		costmap_2d::Costmap2DROS* global_costmap_, *local_costmap_;
+			
+		//private functions
+		void move_base_away(costmap_2d::Costmap2DROS* costmap);
+		pcl::PointCloud<pcl::PointXYZ> costmap_to_pointcloud(const costmap_2d::Costmap2D* costmap);
+		Eigen::Vector3f compute_force_field(pcl::PointCloud<pcl::PointXYZ> cloud);
+		void move_base(float x, float y);
+		
+		//private member variables
+		bool initialized_;
 		std::string name_;
 		tf::TransformListener* tf_;
-		bool initialized_;
-		double reset_distance_;
-		std::set<std::string> clearable_layers_; ///< Layer names which will be cleared.
+		costmap_2d::Costmap2DROS* global_costmap_, *local_costmap_;
+		float max_range_;
+		float scale_; //the scale factor for multypling the force field vector
+		ros::Publisher twist_pub_;
+		
 	};
 };
 
