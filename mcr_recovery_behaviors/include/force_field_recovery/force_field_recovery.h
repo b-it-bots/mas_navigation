@@ -35,6 +35,14 @@
 //for moving the mobile base (publish in cmd_vel)
 #include <geometry_msgs/Twist.h>
 
+//debug
+//#include <pcl_ros/point_cloud.h>
+#include <pcl/PCLPointCloud2.h>
+#include <pcl/conversions.h>
+
+//for publishing local costmap tf
+#include <tf/transform_broadcaster.h>
+
 namespace force_field_recovery
 {
 	/**
@@ -74,6 +82,8 @@ namespace force_field_recovery
 		void move_base_away(costmap_2d::Costmap2DROS* costmap);
 		pcl::PointCloud<pcl::PointXYZ> costmap_to_pointcloud(const costmap_2d::Costmap2D* costmap);
 		Eigen::Vector3f compute_force_field(pcl::PointCloud<pcl::PointXYZ> cloud);
+		void broadcast_costmap_tf(const costmap_2d::Costmap2D* costmap);
+		void publish_cloud(pcl::PointCloud<pcl::PointXYZ> cloud);
 		void move_base(float x, float y);
 		
 		//private member variables
@@ -84,6 +94,9 @@ namespace force_field_recovery
 		float max_range_;
 		float scale_; //the scale factor for multypling the force field vector
 		ros::Publisher twist_pub_;
+		
+		//debug
+		ros::Publisher cloud_pub_;
 		
 	};
 };
