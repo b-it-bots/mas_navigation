@@ -28,6 +28,10 @@ include_directories(
 add_library(mcr_collision_velocity_filter
     ros/src/collision_velocity_filter.cpp
 )
+target_link_libraries(mcr_collision_velocity_filter
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
 
 ### EXECUTABLES ###
 add_executable(collision_velocity_filter_node
