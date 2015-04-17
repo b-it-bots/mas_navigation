@@ -43,6 +43,9 @@
 //for publishing local costmap tf
 #include <tf/transform_broadcaster.h>
 
+//for pointcloud reference frame transformer
+#include <pcl_ros/transforms.h>
+
 namespace force_field_recovery
 {
 	/**
@@ -83,7 +86,8 @@ namespace force_field_recovery
 		pcl::PointCloud<pcl::PointXYZ> costmap_to_pointcloud(const costmap_2d::Costmap2D* costmap);
 		Eigen::Vector3f compute_force_field(pcl::PointCloud<pcl::PointXYZ> cloud);
 		void broadcast_costmap_tf(const costmap_2d::Costmap2D* costmap);
-		void publish_cloud(pcl::PointCloud<pcl::PointXYZ> cloud);
+		sensor_msgs::PointCloud2 publish_cloud(pcl::PointCloud<pcl::PointXYZ> cloud, ros::Publisher &cloud_pub, std::string frame_id);
+		pcl::PointCloud<pcl::PointXYZ> change_cloud_reference_frame(sensor_msgs::PointCloud2 ros_cloud, std::string target_reference_frame);
 		void move_base(float x, float y);
 		
 		//private member variables
@@ -96,8 +100,8 @@ namespace force_field_recovery
 		ros::Publisher twist_pub_;
 		
 		//debug
-		ros::Publisher cloud_pub_;
-		
+		ros::Publisher map_cloud_pub_;
+		ros::Publisher base_footprint_cloud_pub_;
 	};
 };
 

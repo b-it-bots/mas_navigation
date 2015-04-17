@@ -26,7 +26,7 @@ namespace force_field_recovery
 			global_costmap_ = global_costmap;
 			local_costmap_ = local_costmap;
 
-			//ROS_INFO("Initializing Force field recovery behavior...");
+			ROS_INFO("Initializing Force field recovery behavior...");
 			
 			//get some parameters from the parameter server
 			ros::NodeHandle private_nh("~/" + name_);
@@ -34,8 +34,9 @@ namespace force_field_recovery
 			//set up cmd_vel publisher
 			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
 			
-			//set up cloud publisher
-			cloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2> ("/obstacle_cloud", 1);
+			//set up cloud publishers
+			map_cloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2> ("/obstacle_cloud_map", 1);
+			base_footprint_cloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2> ("/obstacle_cloud_base_link", 1);
 			
 			//later on get this parameter from param server, at the moment just for testing
 			scale_ = 0.75;
@@ -69,6 +70,8 @@ namespace force_field_recovery
 			return;
 		}
 		
+		ROS_INFO("Running force field recovery behavior");
+		
 		//moving base away from obstacles
 		move_base_away(local_costmap_);
 	}
@@ -83,43 +86,64 @@ namespace force_field_recovery
 		//2. publish local_costmap_frame
 		broadcast_costmap_tf(costmap_snapshot);
 		
-		//debug
-		//ROS_INFO("=============COSTMAP ANALYSIS========");
-		unsigned int map_x = 5;
-		unsigned int map_y = 5;
-		double world_x;
-		double world_y;
-		costmap_snapshot->mapToWorld(map_x, map_y, world_x, world_y);
-		//ROS_INFO("worldx = %f", (float) world_x);
-		//ROS_INFO("worldy = %f", (float) world_y);
-		map_x = 10;
-		map_y = 10;
-		costmap_snapshot->mapToWorld(map_x, map_y, world_x, world_y);
-		//ROS_INFO("worldx = %f", (float) world_x);
-		//ROS_INFO("worldy = %f", (float) world_y);
-		//ROS_INFO("resolution = %f", (float)costmap_snapshot->getResolution());
-		//ROS_INFO("x origin = %f", (float)costmap_snapshot->getOriginX());
-		//ROS_INFO("y origin = %f", (float)costmap_snapshot->getOriginY());
-		//ROS_INFO("=============END OF COSTMAP ANALYSIS=");
-		
 		//3. convert obstacles inside costmap into pointcloud
 		pcl::PointCloud<pcl::PointXYZ> obstacle_cloud = costmap_to_pointcloud(costmap_snapshot);
 		
 		//4. publish obstacle cloud
-		publish_cloud(obstacle_cloud);
+		sensor_msgs::PointCloud2 ros_obstacle_cloud = publish_cloud(obstacle_cloud, map_cloud_pub_, "/map");
 		
-		//5. compute force field
-		Eigen::Vector3f force_field = compute_force_field(obstacle_cloud);
+		//5. Change cloud to the reference frame of the robot
+		pcl::PointCloud<pcl::PointXYZ> obstacle_cloud_bf = change_cloud_reference_frame(ros_obstacle_cloud, "/base_footprint");
 		
-		//6. publish force field as marker for visualization in rviz
+		//6. publish base link obstacle cloud
+		publish_cloud(obstacle_cloud_bf, base_footprint_cloud_pub_, "/base_footprint");
+		
+		//7. compute force field
+		Eigen::Vector3f force_field = compute_force_field(obstacle_cloud_bf);
+		
+		//8. publish force field as marker for visualization in rviz
 		//todo
 		
-		//7. move base in the direction of the force field
+		//9. move base in the direction of the force field
 		move_base(force_field(0)*scale_, force_field(1)*scale_);
 		
 	}
 	
-	void ForceFieldRecovery::publish_cloud(pcl::PointCloud<pcl::PointXYZ> cloud)
+	pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::change_cloud_reference_frame(sensor_msgs::PointCloud2 ros_cloud, std::string target_reference_frame)
+	{
+		//This function receives a ros cloud (with an associated tf) and tranforms 
+		//all the points to another reference frame (target_reference_frame)
+		
+		//declaring the target ros pcl data type
+		sensor_msgs::PointCloud2 target_ros_pointcloud;
+		
+		//changing pointcloud reference frame
+   
+		// declaring normal PCL clouds (not ros related)
+		pcl::PointCloud<pcl::PointXYZ> cloud_in;
+		pcl::PointCloud<pcl::PointXYZ> cloud_trans;
+		
+		//convert from rospcl to pcl
+		pcl::fromROSMsg(ros_cloud, cloud_in);
+		
+		//STEP 1 Convert xb3 message to center_bumper frame (i think it is better this way)
+		tf::StampedTransform transform;
+		try
+		{
+			tf_->lookupTransform(target_reference_frame, ros_cloud.header.frame_id, ros::Time(0), transform);
+		}
+		catch (tf::TransformException ex)
+		{
+			ROS_ERROR("%s",ex.what());
+		}
+		
+		// Transform point cloud
+		pcl_ros::transformPointCloud (cloud_in, cloud_trans, transform);  
+		
+		return cloud_trans;
+	}
+	
+	sensor_msgs::PointCloud2 ForceFieldRecovery::publish_cloud(pcl::PointCloud<pcl::PointXYZ> cloud, ros::Publisher &cloud_pub, std::string frame_id)
 	{
 		//this function receives a pcl pointcloud, transforms into ros pointcloud and then publishes
 		
@@ -149,10 +173,13 @@ namespace force_field_recovery
 		pcl_conversions::fromPCL(cloud2, ros_cloud);
 		
 		//assigning a frame to ros cloud
-		ros_cloud.header.frame_id = "/map";
+		ros_cloud.header.frame_id = frame_id;
 		
 		//publish the cloud
-		cloud_pub_.publish(ros_cloud);
+		cloud_pub.publish(ros_cloud);
+		
+		//returning the cloud, it could be useful for other components
+		return ros_cloud;
 	}
 	
 	void ForceFieldRecovery::broadcast_costmap_tf(const costmap_2d::Costmap2D* costmap)
@@ -172,7 +199,7 @@ namespace force_field_recovery
 		local_costmap_tf.setRotation( tf::createQuaternionFromRPY(0.0, 0.0, 0.0) );
 		
 		//broadcasting transform with map as parent frame
-		tf_broadcaster.sendTransform(tf::StampedTransform(local_costmap_tf, ros::Time::now(), "map", "local_costmap"));
+		tf_broadcaster.sendTransform(tf::StampedTransform(local_costmap_tf, ros::Time::now(), "/map", "/local_costmap"));
 	}
 	
 	pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmap_to_pointcloud(const costmap_2d::Costmap2D* costmap)
