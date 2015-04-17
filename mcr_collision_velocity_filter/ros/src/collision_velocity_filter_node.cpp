@@ -278,7 +278,7 @@ void CollisionVelocityFilterNode::update()
         double sum_desired = fabs(desired_twist_msg_.linear.x) + fabs(desired_twist_msg_.linear.y) + fabs(desired_twist_msg_.angular.x);
         double sum_safe = fabs(safe_twist_.linear.x) + fabs(safe_twist_.linear.y) + fabs(safe_twist_.angular.x);
 
-        if(sum_desired > 0.0 and sum_safe == 0.0)
+        if (sum_desired > 0.0 and sum_safe == 0.0)
         {
             event_out_.data = "e_stuck";
             pub_event_.publish(event_out_);
