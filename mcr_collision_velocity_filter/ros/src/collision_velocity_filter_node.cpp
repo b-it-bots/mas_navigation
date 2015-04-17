@@ -275,6 +275,7 @@ void CollisionVelocityFilterNode::update()
         // publish safe velocities
         pub_safe_twist_.publish(safe_twist_);
 
+        // publish events
         double sum_desired = fabs(desired_twist_msg_.linear.x) + fabs(desired_twist_msg_.linear.y) + fabs(desired_twist_msg_.angular.x);
         double sum_safe = fabs(safe_twist_.linear.x) + fabs(safe_twist_.linear.y) + fabs(safe_twist_.angular.x);
 
