@@ -57,7 +57,7 @@ void BaseMotionController::moveBaseCallback(const geometry_msgs::PoseStamped &ms
 
   ROS_DEBUG("Got new move message");
 
-  ROS_INFO("x, y, rot: %.2f, %.2f, %.2f", x_trans_, y_trans_, z_rot_);
+  ROS_DEBUG("x, y, rot: %.2f, %.2f, %.2f", x_trans_, y_trans_, z_rot_);
 
 
   // if both translation and rotation are specified, issue a warning
@@ -275,7 +275,6 @@ bool BaseMotionController::translateRelative(double x_trans, double y_trans)
         base_velocities_pub_.publish(zero_velocity);
         return false;
       }
-      //ROS_INFO("inside while x, y, rot: %.2f, %.2f, %.2f", x_trans_, y_trans_, z_rot_);
     }
     odom_received_ = false;
 
