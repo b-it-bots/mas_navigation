@@ -7,13 +7,13 @@
 #include <tf/LinearMath/Matrix3x3.h>
 #include <tf/LinearMath/Matrix3x3.h>
 
-
 BaseMotionController::BaseMotionController(ros::NodeHandle &n) : nh_(n)
 {
   dynamic_reconfigure_server_.setCallback(boost::bind(&BaseMotionController::dynamicReconfigCallback, this, _1, _2));
 
   odom_received_ = false;
   done_moving_ = true;
+  new_command_interuption_flag = false;
   start_relative_movement_ = false;
 
   nh_.getParam("world_frame_tf", world_frame_tf_);
@@ -47,35 +47,35 @@ void BaseMotionController::moveBaseCallback(const geometry_msgs::PoseStamped &ms
     return;
   }
 
-  if(done_moving_)
+
+  new_command_interuption_flag = true;
+
+  x_trans_ = relative_move_command.pose.position.x;
+  y_trans_ = relative_move_command.pose.position.y;
+
+  z_rot_ = getYaw(relative_move_command.pose.orientation);
+
+  ROS_DEBUG("Got new move message");
+
+  ROS_DEBUG("x, y, rot: %.2f, %.2f, %.2f", x_trans_, y_trans_, z_rot_);
+
+
+  // if both translation and rotation are specified, issue a warning
+  if (((x_trans_ != 0.0) || (y_trans_ != 0.0)) && (z_rot_ != 0.0))
   {
-      x_trans_ = relative_move_command.pose.position.x;
-      y_trans_ = relative_move_command.pose.position.y;
-
-      z_rot_ = getYaw(relative_move_command.pose.orientation);
-
-      ROS_DEBUG("Got new move message");
-
-      // if both translation and rotation are specified, issue a warning
-      if (((x_trans_ != 0.0) || (y_trans_ != 0.0)) && (z_rot_ != 0.0))
-      {
-        ROS_WARN("Both translation and rotation are set");
-        if (rotate_first_)
-        {
-          ROS_WARN("Rotating first then translating");
-        }
-        else
-        {
-          ROS_WARN("Translating first then rotating");
-        }
-      }
-      done_moving_ = false;
-      new_command_sent_ = true;
+    ROS_INFO("Both translation and rotation are set");
+    if (rotate_first_)
+    {
+      ROS_WARN("Rotating first then translating");
+    }
+    else
+    {
+      ROS_WARN("Translating first then rotating");
+    }
   }
-  else 
-  {
-    ROS_WARN("Base still moving. Ignoring move command");
-  }
+  done_moving_ = false;
+  new_command_sent_ = true;
+
 }
 
 void BaseMotionController::triggerCallback(const std_msgs::String &trigger_command)
@@ -133,6 +133,8 @@ void BaseMotionController::run()
     odom_received_ = false;
     if (start_relative_movement_)
     {
+      new_command_interuption_flag = false;
+
       // rotate first then translate
       if (rotate_first_)
       {
@@ -158,7 +160,8 @@ void BaseMotionController::run()
         }
       }
     }
-    if (new_command_sent_)
+
+    if (new_command_sent_ && !new_command_interuption_flag)
     {
       new_command_sent_ = false;
       x_trans_ = 0.0;
@@ -211,7 +214,6 @@ bool BaseMotionController::translateRelative(double x_trans, double y_trans)
   point.x = x_current_;
   point.y = y_current_;
   geometry_msgs::Point newPoint = getTransformedPoint(point, robot_yaw);
-
   // calculate desired x and y positions
   double x_goal = newPoint.x + x_trans;
   double y_goal = newPoint.y + y_trans;
@@ -229,6 +231,11 @@ bool BaseMotionController::translateRelative(double x_trans, double y_trans)
   // while either x or y translation needs to be done
   while (!isMovementDone(x_goal, newPoint.x) || !isMovementDone(y_goal, newPoint.y))
   {
+    if (new_command_interuption_flag)
+    {
+        ROS_WARN("Interupted!! Returning as got new command");
+        return true;
+    }
     geometry_msgs::Twist base_velocity;
     // if x translation is required
     if (!isMovementDone(x_goal, newPoint.x))
@@ -319,6 +326,13 @@ bool BaseMotionController::rotateRelative(double rotation)
   while (!isMovementDone(theta_goal, theta_current_))
   {
     geometry_msgs::Twist base_velocity;
+
+    if (new_command_interuption_flag)
+    {
+        ROS_WARN("Interupted!! Returning as got new command");
+        return true;
+    }
+
     // calculate difference in current and goal position in radians
     double theta_diff = angularDistance(theta_goal, theta_current_);
 

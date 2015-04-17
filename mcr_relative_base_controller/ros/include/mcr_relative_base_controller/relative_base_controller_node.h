@@ -139,6 +139,9 @@ class BaseMotionController
     /// determines how close to the target the base should get
     double tolerance_;
 
+    /// set true when receives a new command
+    bool new_command_interuption_flag;
+
     ros::Publisher base_velocities_pub_; /// base velocity publisher
     ros::Subscriber move_command_sub_; /// subscriber for relative movement command
     ros::Subscriber trigger_sub_; /// subscriber for start/stop trigger
