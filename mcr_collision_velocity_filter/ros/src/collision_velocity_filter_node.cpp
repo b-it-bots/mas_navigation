@@ -283,8 +283,11 @@ void CollisionVelocityFilterNode::update()
         {
             event_out_.data = "e_zero_velocities_forwarded";
             pub_event_.publish(event_out_);
+        } else if (sum_desired != sum_safe)
+        {
+            event_out_.data = "e_reduced_velocities_forwarded";
+            pub_event_.publish(event_out_);
         }
-
 
         laser_scans_as_pcl_cloud_received = false;
         desired_twist_msg_received_ = false;
