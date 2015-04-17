@@ -63,7 +63,7 @@ void BaseMotionController::moveBaseCallback(const geometry_msgs::PoseStamped &ms
   // if both translation and rotation are specified, issue a warning
   if (((x_trans_ != 0.0) || (y_trans_ != 0.0)) && (z_rot_ != 0.0))
   {
-    ROS_WARN("Both translation and rotation are set");
+    ROS_INFO("Both translation and rotation are set");
     if (rotate_first_)
     {
       ROS_WARN("Rotating first then translating");
@@ -233,7 +233,7 @@ bool BaseMotionController::translateRelative(double x_trans, double y_trans)
   {
     if (new_command_interuption_flag)
     {
-        ROS_INFO("Interupted!! Returning as got new command");
+        ROS_WARN("Interupted!! Returning as got new command");
         return true;
     }
     geometry_msgs::Twist base_velocity;
@@ -329,7 +329,7 @@ bool BaseMotionController::rotateRelative(double rotation)
 
     if (new_command_interuption_flag)
     {
-        ROS_INFO("Interupted!! Returning as got new command");
+        ROS_WARN("Interupted!! Returning as got new command");
         return true;
     }
 
