@@ -1,6 +1,6 @@
 #include <force_field_recovery/force_field_recovery.h>
 
-//register this planner as a RecoveryBehavior plugin
+// Register this planner as a RecoveryBehavior plugin
 PLUGINLIB_DECLARE_CLASS(force_field_recovery, ForceFieldRecovery, force_field_recovery::ForceFieldRecovery, nav_core::RecoveryBehavior)
 
 using costmap_2d::NO_INFORMATION;
@@ -21,30 +21,25 @@ namespace force_field_recovery
 			//initialization, this code will be executed only once
 			
 			//receiving move_base variables and copying them over to class variables
-			name_ = name;
 			tf_ = tf;
 			global_costmap_ = global_costmap;
 			local_costmap_ = local_costmap;
+			
+			ros::NodeHandle private_nh("~/" + name);
 
 			ROS_INFO("Initializing Force field recovery behavior...");
 			
-			//get some parameters from the parameter server
-			ros::NodeHandle private_nh("~/" + name_);
+			// Getting values from parameter server and storing into class variables
+			private_nh.param("force_field_to_velocity_scale", force_field_to_velocity_scale_, 0.6);
+			private_nh.param("obstacle_neightborhood", obstacle_neightborhood_, 0.6);
 			
 			//set up cmd_vel publisher
-			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
+			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1); //attention
 			
-			//set up cloud publishers
+			//set up cloud publishers topic
 			map_cloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2> ("/obstacle_cloud_map", 1);
 			base_footprint_cloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2> ("/obstacle_cloud_base_link", 1);
 			
-			//later on get this parameter from param server, at the moment just for testing
-			scale_ = 0.75;
-			max_range_ = 0.75;
-			
-			//force_field_distance : how far away from obstacles the robot should move away
-			//private_nh.param("force_field_distance", force_field_distance_, 0.2);
-
 			//setting initialized flag to true, preventing this code to be executed twice
 			initialized_ = true;
 		}
@@ -63,7 +58,7 @@ namespace force_field_recovery
 			return;
 		}
 
-		//checking if the received costmaps are empty
+		//checking if the received costmaps are empty, if so exit
 		if(global_costmap_ == NULL || local_costmap_ == NULL)
 		{
 			ROS_ERROR("The costmaps passed to the ClearCostmapRecovery object cannot be NULL. Doing nothing.");
@@ -72,7 +67,7 @@ namespace force_field_recovery
 		
 		ROS_INFO("Running force field recovery behavior");
 		
-		//moving base away from obstacles
+		// Moving base away from obstacles
 		move_base_away(local_costmap_);
 	}
 	
@@ -83,30 +78,111 @@ namespace force_field_recovery
 		//1. getting a snapshot of the costmap
 		costmap_2d::Costmap2D* costmap_snapshot = costmap_ros->getCostmap();
 		
-		//2. publish local_costmap_frame
-		broadcast_costmap_tf(costmap_snapshot);
-		
-		//3. convert obstacles inside costmap into pointcloud
+		//2. convert obstacles inside costmap into pointcloud
 		pcl::PointCloud<pcl::PointXYZ> obstacle_cloud = costmap_to_pointcloud(costmap_snapshot);
 		
-		//4. publish obstacle cloud
+		//3. publish obstacle cloud
 		sensor_msgs::PointCloud2 ros_obstacle_cloud = publish_cloud(obstacle_cloud, map_cloud_pub_, "/map");
 		
-		//5. Change cloud to the reference frame of the robot
+		//4. Change cloud to the reference frame of the robot
 		pcl::PointCloud<pcl::PointXYZ> obstacle_cloud_bf = change_cloud_reference_frame(ros_obstacle_cloud, "/base_footprint");
 		
-		//6. publish base link obstacle cloud
+		//5. publish base link obstacle cloud
 		publish_cloud(obstacle_cloud_bf, base_footprint_cloud_pub_, "/base_footprint");
 		
-		//7. compute force field
+		//6. compute force field
 		Eigen::Vector3f force_field = compute_force_field(obstacle_cloud_bf);
 		
-		//8. publish force field as marker for visualization in rviz
+		//7. publish force field as marker for visualization in rviz
 		//todo
 		
-		//9. move base in the direction of the force field
-		move_base(force_field(0)*scale_, force_field(1)*scale_);
+		//8. move base in the direction of the force field
+		move_base(force_field(0)*force_field_to_velocity_scale_, force_field(1)*force_field_to_velocity_scale_);
 		
+	}
+	
+	pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmap_to_pointcloud(const costmap_2d::Costmap2D* costmap)
+	{
+		
+		// This function transforms occupied regions of a costmap, letal cost = 254 to 
+		// pointcloud xyz coordinate
+		
+		//for storing and return the pointcloud
+		pcl::PointCloud<pcl::PointXYZ> cloud;
+		
+		int x_size_ = costmap->getSizeInCellsX();
+		int y_size_ = costmap->getSizeInCellsY();
+		
+		int current_cost = 0;
+		
+		//for transforming map to world coordinates
+		double world_x;
+		double world_y;
+		
+		for(int i = 0; i < x_size_ ; i++)
+		{
+			for(int j = 0; j < y_size_ ; j++)
+			{
+				//getting each cost
+				current_cost = costmap->getCost(i, j);
+				
+				ROS_DEBUG("i, j = %d, %d : cost = %d ", i, j, current_cost);
+				ROS_DEBUG("costmap cost [%d][%d] = %d", i, j, current_cost);
+				
+				//if cell is occupied by obstacle then add the centroid of the cell to the cloud
+				if(current_cost == LETHAL_COST)
+				{
+					//get world coordinates of current occupied cell
+					costmap->mapToWorld(i, j, world_x, world_y);
+					
+					ROS_DEBUG("point %d, %d = %f, %f ",i ,j , (float) world_x, (float) world_y);
+					
+					//adding occupied cell centroid coordinates to cloud
+					cloud.push_back (pcl::PointXYZ (world_x, world_y, 0));
+				}
+			}
+		}
+		
+		return cloud;
+	}
+	
+	sensor_msgs::PointCloud2 ForceFieldRecovery::publish_cloud(pcl::PointCloud<pcl::PointXYZ> cloud, ros::Publisher &cloud_pub, std::string frame_id)
+	{
+		//this function receives a pcl pointcloud, transforms into ros pointcloud and then publishes
+		
+		//debug
+		//ROS_DEBUG("Publishing obstacle cloud");
+		//Print points of the cloud in terminal
+		pcl::PointCloud<pcl::PointXYZ>::const_iterator cloud_iterator = cloud.begin();
+		int numPoints = 0;
+		while (cloud_iterator != cloud.end())
+		{
+			//ROS_DEBUG("cloud [%d] = %f, %f, %f ", numPoints, (float)cloud_iterator->x, (float)cloud_iterator->y, (float)cloud_iterator->z);
+			++cloud_iterator;
+			numPoints++;
+		}
+		//ROS_DEBUG("total number of points in the cloud = %d", numPoints);
+		
+		//creating a pointcloud2 data type
+		pcl::PCLPointCloud2 cloud2;
+		
+		//converting normal cloud to pointcloud2 data type
+		pcl::toPCLPointCloud2(cloud, cloud2);
+		
+		//declaring a ros pointcloud data type
+		sensor_msgs::PointCloud2 ros_cloud;
+		
+		//converting pointcloud2 to ros pointcloud
+		pcl_conversions::fromPCL(cloud2, ros_cloud);
+		
+		//assigning a frame to ros cloud
+		ros_cloud.header.frame_id = frame_id;
+		
+		//publish the cloud
+		cloud_pub.publish(ros_cloud);
+		
+		//returning the cloud, it could be useful for other components
+		return ros_cloud;
 	}
 	
 	pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::change_cloud_reference_frame(sensor_msgs::PointCloud2 ros_cloud, std::string target_reference_frame)
@@ -143,135 +219,6 @@ namespace force_field_recovery
 		return cloud_trans;
 	}
 	
-	sensor_msgs::PointCloud2 ForceFieldRecovery::publish_cloud(pcl::PointCloud<pcl::PointXYZ> cloud, ros::Publisher &cloud_pub, std::string frame_id)
-	{
-		//this function receives a pcl pointcloud, transforms into ros pointcloud and then publishes
-		
-		//debug
-		//ROS_INFO("Publishing obstacle cloud");
-		//Print points of the cloud in terminal
-		pcl::PointCloud<pcl::PointXYZ>::const_iterator cloud_iterator = cloud.begin();
-		int numPoints = 0;
-		while (cloud_iterator != cloud.end())
-		{
-			//ROS_INFO("cloud [%d] = %f, %f, %f ", numPoints, (float)cloud_iterator->x, (float)cloud_iterator->y, (float)cloud_iterator->z);
-			++cloud_iterator;
-			numPoints++;
-		}
-		//ROS_INFO("total number of points in the cloud = %d", numPoints);
-		
-		//creating a pointcloud2 data type
-		pcl::PCLPointCloud2 cloud2;
-		
-		//converting normal cloud to pointcloud2 data type
-		pcl::toPCLPointCloud2(cloud, cloud2);
-		
-		//declaring a ros pointcloud data type
-		sensor_msgs::PointCloud2 ros_cloud;
-		
-		//converting pointcloud2 to ros pointcloud
-		pcl_conversions::fromPCL(cloud2, ros_cloud);
-		
-		//assigning a frame to ros cloud
-		ros_cloud.header.frame_id = frame_id;
-		
-		//publish the cloud
-		cloud_pub.publish(ros_cloud);
-		
-		//returning the cloud, it could be useful for other components
-		return ros_cloud;
-	}
-	
-	void ForceFieldRecovery::broadcast_costmap_tf(const costmap_2d::Costmap2D* costmap)
-	{
-		//this function receives a costmap and publishes the origin of it as a tf
-	
-		float local_costmap_origin_x = costmap->getOriginX();
-		float local_costmap_origin_y = costmap->getOriginY();
-		
-		tf::StampedTransform local_costmap_tf;
-		static tf::TransformBroadcaster tf_broadcaster;
-		
-		//creating local costmap frame, setting origin
-		local_costmap_tf.setOrigin( tf::Vector3(local_costmap_origin_x, local_costmap_origin_y, 0.0) );
-		
-		//no rotation for the local costmap
-		local_costmap_tf.setRotation( tf::createQuaternionFromRPY(0.0, 0.0, 0.0) );
-		
-		//broadcasting transform with map as parent frame
-		tf_broadcaster.sendTransform(tf::StampedTransform(local_costmap_tf, ros::Time::now(), "/map", "/local_costmap"));
-	}
-	
-	pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmap_to_pointcloud(const costmap_2d::Costmap2D* costmap)
-	{
-		
-		// This function transforms occupied regions of a costmap, letal cost = 254 to 
-		// pointcloud xyz coordinate
-		
-		//for storing and return the pointcloud
-		pcl::PointCloud<pcl::PointXYZ> cloud;
-		
-		int x_size_ = costmap->getSizeInCellsX();
-		int y_size_ = costmap->getSizeInCellsY();
-		
-		int current_cost = 0;
-		const int LETHAL_COST = 254;
-		
-		const double x_origin_costmap = costmap->getOriginX();
-		const double y_origin_costmap = costmap->getOriginY();
-		
-		//for transforming map to world coordinates
-		unsigned int map_x;
-		unsigned int map_y;
-		double world_x;
-		double world_y;
-		
-		//debug
-		bool lethal_flag = false;
-		
-		for(int i = 0; i < x_size_ ; i++) //attention i=0
-		{
-			for(int j = 0; j < y_size_ ; j++) //attention j=0
-			{
-				//getting each cost
-				current_cost = costmap->getCost(i, j);
-				
-				//debug
-				//ROS_INFO("i, j = %d, %d : cost = %d ", i, j, current_cost);
-				
-				//debug
-				//ROS_INFO("costmap cost [%d][%d] = %d", i, j, current_cost);
-				
-				//if cell is occupied by obstacle then add the centroid of the cell to the cloud
-				if(current_cost == LETHAL_COST)
-				{
-					//debug
-					lethal_flag = true;
-					
-					map_x = i;
-					map_y = j;
-					
-					//get world coordinates of current occupied cell
-					costmap->mapToWorld(map_x, map_y, world_x, world_y);
-					
-					//debug
-					//ROS_INFO("point %d, %d = %f, %f ",i ,j , (float)world_x, (float)world_y);
-					
-					//adding occupied cell centroid coordinates to cloud
-					cloud.push_back (pcl::PointXYZ (world_x, world_y, 0));
-				}
-			}
-		}
-		
-		//debug
-		if(lethal_flag)
-		{
-			//ROS_INFO("lethal cost detected!!!!!!!!!!");
-		}
-		
-		return cloud;
-	}
-	
 	Eigen::Vector3f ForceFieldRecovery::compute_force_field(pcl::PointCloud<pcl::PointXYZ> cloud)
 	{
 		// This function receives a cloud and returns the negative of the resultant
@@ -287,9 +234,9 @@ namespace force_field_recovery
 			Eigen::Vector3f each_point(cloud_iterator->x, cloud_iterator->y, 0);
 			
 			//debug
-			//ROS_INFO("Norm of the point : %f", each_point.norm());
+			//ROS_DEBUG("Norm of the point : %f", each_point.norm());
 			
-			if (each_point.norm() < max_range_)
+			if (each_point.norm() < obstacle_neightborhood_)
 			{
 				force_vector -= each_point;
 				numPoints++;
@@ -301,7 +248,7 @@ namespace force_field_recovery
 		if (numPoints == 0) 
 		{
 			//Cloud is empty
-			//ROS_INFO("Null force field, cloud is empty");
+			ROS_INFO("Null force field, cloud is empty. You might want to check /max_range parameter");
 			return Eigen::Vector3f(0, 0, 0);
 		}
 		
@@ -311,11 +258,11 @@ namespace force_field_recovery
 		return force_vector;
 	}
 	
-	void ForceFieldRecovery::move_base(float x, float y)
+	void ForceFieldRecovery::move_base(double x, double y)
 	{
 		geometry_msgs::Twist twist_msg;
 		
-		//ROS_INFO("Moving base into the direction of the force field");
+		ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
 		
 		twist_msg.linear.x = x;
 		twist_msg.linear.y = y;
@@ -323,8 +270,8 @@ namespace force_field_recovery
 		twist_msg.angular.x = 0.0;
 		twist_msg.angular.y = 0.0;
 		twist_msg.angular.z = 0.0;
-		//debug
-		//twist_pub_.publish(twist_msg);
+		
+		twist_pub_.publish(twist_msg);
 	}
 
 };
