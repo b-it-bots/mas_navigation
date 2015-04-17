@@ -281,7 +281,7 @@ void CollisionVelocityFilterNode::update()
 
         if (sum_desired > 0.0 and sum_safe == 0.0)
         {
-            event_out_.data = "e_stuck";
+            event_out_.data = "e_zero_velocities_forwarded";
             pub_event_.publish(event_out_);
         }
 
