@@ -83,32 +83,54 @@ namespace force_field_recovery
 	{
 		//this function moves the mobile base away from obstacles based on a costmap
 		
-		//1. getting a snapshot of the costmap
-		costmap_2d::Costmap2D* costmap_snapshot = costmap_ros->getCostmap();
+		ros::Time start_time = ros::Time::now();
 		
-		//2. convert obstacles inside costmap into pointcloud
-		pcl::PointCloud<pcl::PointXYZ> obstacle_cloud = costmap_to_pointcloud(costmap_snapshot);
+		bool no_obstacles_in_radius = false;
 		
-		//3. publish obstacle cloud
-		sensor_msgs::PointCloud2 ros_obstacle_cloud = publish_cloud(obstacle_cloud, map_cloud_pub_, "/map");
+		while((ros::Duration(ros::Time::now() - start_time).toSec() < 10.0) && !no_obstacles_in_radius)
+		{
+			//1. getting a snapshot of the costmap
+			costmap_2d::Costmap2D* costmap_snapshot = costmap_ros->getCostmap();
+			
+			//2. convert obstacles inside costmap into pointcloud
+			pcl::PointCloud<pcl::PointXYZ> obstacle_cloud = costmap_to_pointcloud(costmap_snapshot);
+			
+			//3. publish obstacle cloud
+			sensor_msgs::PointCloud2 ros_obstacle_cloud = publish_cloud(obstacle_cloud, map_cloud_pub_, "/map");
+			
+			//4. Change cloud to the reference frame of the robot
+			pcl::PointCloud<pcl::PointXYZ> obstacle_cloud_bf = change_cloud_reference_frame(ros_obstacle_cloud, "/base_footprint");
+			
+			//5. publish base link obstacle cloud
+			publish_cloud(obstacle_cloud_bf, base_footprint_cloud_pub_, "/base_footprint");
+			
+			//6. compute force field
+			Eigen::Vector3f force_field = compute_force_field(obstacle_cloud_bf);
+			
+			if(force_field(0) == 0 && force_field(1) == 0)
+			{
+				no_obstacles_in_radius = true;
+				break;
+			}
+				
+			//7. publish force field as marker for visualization in rviz
+			//todo
+			
+			//8. move base in the direction of the force field
+			move_base(force_field(0)*force_field_to_velocity_scale_, force_field(1)*force_field_to_velocity_scale_);
+		}
 		
-		//4. Change cloud to the reference frame of the robot
-		pcl::PointCloud<pcl::PointXYZ> obstacle_cloud_bf = change_cloud_reference_frame(ros_obstacle_cloud, "/base_footprint");
-		
-		//5. publish base link obstacle cloud
-		publish_cloud(obstacle_cloud_bf, base_footprint_cloud_pub_, "/base_footprint");
-		
-		//6. compute force field
-		Eigen::Vector3f force_field = compute_force_field(obstacle_cloud_bf);
-		
-		//7. publish force field as marker for visualization in rviz
-		//todo
-		
-		//8. move base in the direction of the force field
-		move_base(force_field(0)*force_field_to_velocity_scale_, force_field(1)*force_field_to_velocity_scale_);
+		if(no_obstacles_in_radius)
+		{
+			ROS_INFO("Force field recovery succesfull");
+		}
+		else
+		{
+			ROS_WARN("Time out exceeded");
+		}
 		
 		//9. wait for some time
-		ros::Duration(go_away_time_).sleep();
+		//ros::Duration(go_away_time_).sleep();
 		
 		//10. stop the base
 		move_base(0.0, 0.0);
