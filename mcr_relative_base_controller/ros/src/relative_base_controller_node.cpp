@@ -19,7 +19,7 @@ BaseMotionController::BaseMotionController(ros::NodeHandle &n) : nh_(n)
   nh_.getParam("world_frame_tf", world_frame_tf_);
   nh_.getParam("base_frame_tf", base_frame_tf_);
 
-  base_velocities_pub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1 );
+  base_velocities_pub_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 1 );
   move_done_pub_ = nh_.advertise<std_msgs::String>("event_out", 1);
 
   move_command_sub_ = nh_.subscribe("command", 1, &BaseMotionController::moveBaseCallback, this);
