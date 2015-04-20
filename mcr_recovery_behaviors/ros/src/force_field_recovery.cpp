@@ -297,6 +297,8 @@ namespace force_field_recovery
 		force_vector.normalize();
 		force_vector = force_vector * 1.0;
 		
+		ROS_DEBUG("Force vector = (%f, %f)", (float) force_vector(0), (float) force_vector(1));
+		
 		return force_vector;
 	}
 	
@@ -306,7 +308,10 @@ namespace force_field_recovery
 		
 		//clamping x and y to maximum speed value
 		if(x > max_velocity_) x = max_velocity_;
+		else if(x < -max_velocity_) x = -max_velocity_;
+		
 		if(y > max_velocity_) y = max_velocity_;
+		else if(y < -max_velocity_) y = -max_velocity_;
 		
 		ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
 		
