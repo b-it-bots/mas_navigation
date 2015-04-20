@@ -3,11 +3,12 @@ project(mcr_recovery_behaviors)
 
 find_package(catkin REQUIRED
         COMPONENTS
-            cmake_modules
             costmap_2d
             nav_core
             pluginlib
             roscpp
+            geometry_msgs
+            pcl_ros
             tf
         )
 
