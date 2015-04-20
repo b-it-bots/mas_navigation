@@ -30,8 +30,12 @@ namespace force_field_recovery
 			ROS_INFO("Initializing Force field recovery behavior...");
 			
 			// Getting values from parameter server and storing into class variables
-			private_nh.param("force_field_to_velocity_scale", force_field_to_velocity_scale_, 0.6);
-			private_nh.param("obstacle_neightborhood", obstacle_neightborhood_, 0.6);
+			private_nh.param("/force_field_to_velocity_scale", force_field_to_velocity_scale_, 0.6);
+			private_nh.param("/obstacle_neightborhood", obstacle_neightborhood_, 0.6);
+			
+			// Inform user about which parameters will be used for the recovery behavior
+			ROS_INFO("Recovery behavior, using Force field scale parameter : %f", (float) force_field_to_velocity_scale_);
+			ROS_INFO("Recovery behavior, using Force field neightborhood parameter : %f", (float) obstacle_neightborhood_);
 			
 			//set up cmd_vel publisher
 			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1); //attention
