@@ -14,7 +14,7 @@ find_package(catkin REQUIRED
 find_package(Eigen REQUIRED)
 find_package(PCL REQUIRED)
 include_directories(
-    include
+    ros/include
     ${catkin_INCLUDE_DIRS}
     ${EIGEN_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
@@ -22,7 +22,8 @@ include_directories(
 add_definitions(${EIGEN_DEFINITIONS})
 
 catkin_package(
-    INCLUDE_DIRS include
+    INCLUDE_DIRS
+      ros/include
     LIBRARIES force_field_recovery
     CATKIN_DEPENDS
         costmap_2d
@@ -32,7 +33,7 @@ catkin_package(
         tf
 )
 
-add_library(force_field_recovery src/force_field_recovery.cpp)
+add_library(force_field_recovery ros/src/force_field_recovery.cpp)
 target_link_libraries(force_field_recovery ${catkin_LIBRARIES})
 
 #install(TARGETS force_field_recovery

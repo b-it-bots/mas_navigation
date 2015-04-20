@@ -30,19 +30,21 @@ namespace force_field_recovery
 			ROS_INFO("Initializing Force field recovery behavior...");
 			
 			// Getting values from parameter server and storing into class variables
-			private_nh.param("/force_field_to_velocity_scale", force_field_to_velocity_scale_, 0.6);
-			private_nh.param("/obstacle_neightborhood", obstacle_neightborhood_, 0.6);
-			private_nh.param("/max_cmd_speed", max_cmd_speed_, 0.3);
-			private_nh.param("/go_away_time_", go_away_time_, 0.5);
+			private_nh.param("velocity_scale_factor", velocity_scale_, 0.6);
+			private_nh.param("obstacle_neighborhood", obstacle_neighborhood_, 0.6);
+			private_nh.param("max_velocity", max_velocity_, 0.3);
+			private_nh.param("timeout", timeout_, 3.0);
+			private_nh.param("update_frequency", recovery_behavior_update_frequency_, 5.0);
 			
 			// Inform user about which parameters will be used for the recovery behavior
-			ROS_INFO("Recovery behavior, using Force field force_field_to_velocity_scale parameter : %f", (float) force_field_to_velocity_scale_);
-			ROS_INFO("Recovery behavior, using Force field /obstacle_neightborhood parameter : %f", (float) obstacle_neightborhood_);
-			ROS_INFO("Recovery behavior, using Force field /max_cmd_spped parameter : %f", (float) max_cmd_speed_);
-			ROS_INFO("Recovery behavior, using Force field /go_away_time parameter : %f", (float) go_away_time_);
+			ROS_INFO("Recovery behavior, using Force field velocity_scale parameter : %f", (float) velocity_scale_);
+			ROS_INFO("Recovery behavior, using Force field obstacle_neighborhood parameter : %f", (float) obstacle_neighborhood_);
+			ROS_INFO("Recovery behavior, using Force field max_velocity parameter : %f", (float) max_velocity_);
+			ROS_INFO("Recovery behavior, using Force field timeout parameter : %f", (float) timeout_);
+			ROS_INFO("Recovery behavior, using Force field recovery_behavior_update_frequency_ parameter : %f", (float) recovery_behavior_update_frequency_);
 			
 			//set up cmd_vel publisher
-			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1); //attention
+			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 			
 			//set up cloud publishers topic
 			map_cloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2> ("/obstacle_cloud_map", 1);
@@ -86,8 +88,10 @@ namespace force_field_recovery
 		ros::Time start_time = ros::Time::now();
 		
 		bool no_obstacles_in_radius = false;
+		ros::Rate loop_rate(recovery_behavior_update_frequency_);
 		
-		while((ros::Duration(ros::Time::now() - start_time).toSec() < 10.0) && !no_obstacles_in_radius)
+		//while certain time (timeout) or no obstacles inside radius do the loop 
+		while((ros::Duration(ros::Time::now() - start_time).toSec() < timeout_) && !no_obstacles_in_radius)
 		{
 			//1. getting a snapshot of the costmap
 			costmap_2d::Costmap2D* costmap_snapshot = costmap_ros->getCostmap();
@@ -117,7 +121,10 @@ namespace force_field_recovery
 			//todo
 			
 			//8. move base in the direction of the force field
-			move_base(force_field(0)*force_field_to_velocity_scale_, force_field(1)*force_field_to_velocity_scale_);
+			move_base(force_field(0)*velocity_scale_, force_field(1)*velocity_scale_);
+			
+			//9. Control the frequency update for costmap update
+			loop_rate.sleep();
 		}
 		
 		if(no_obstacles_in_radius)
@@ -126,11 +133,8 @@ namespace force_field_recovery
 		}
 		else
 		{
-			ROS_WARN("Time out exceeded");
+			ROS_WARN("Force field recovery behavior time out exceeded");
 		}
-		
-		//9. wait for some time
-		//ros::Duration(go_away_time_).sleep();
 		
 		//10. stop the base
 		move_base(0.0, 0.0);
@@ -274,7 +278,7 @@ namespace force_field_recovery
 			
 			ROS_DEBUG("Norm of the point : %f", each_point.norm());
 			
-			if (each_point.norm() < obstacle_neightborhood_)
+			if (each_point.norm() < obstacle_neighborhood_)
 			{
 				force_vector -= each_point;
 				numPoints++;
@@ -286,12 +290,12 @@ namespace force_field_recovery
 		if (numPoints == 0) 
 		{
 			//Cloud is empty
-			ROS_INFO("Null force field, cloud is empty. You might want to check /obstacle_neightborhood_ parameter");
+			
 			return Eigen::Vector3f(0, 0, 0);
 		}
 		
 		force_vector.normalize();
-		force_vector = force_vector*1.0;
+		force_vector = force_vector * 1.0;
 		
 		return force_vector;
 	}
@@ -301,8 +305,8 @@ namespace force_field_recovery
 		geometry_msgs::Twist twist_msg;
 		
 		//clamping x and y to maximum speed value
-		if(x > max_cmd_speed_) x = max_cmd_speed_;
-		if(y > max_cmd_speed_) y = max_cmd_speed_;
+		if(x > max_velocity_) x = max_velocity_;
+		if(y > max_velocity_) y = max_velocity_;
 		
 		ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
 		

@@ -153,16 +153,19 @@ namespace force_field_recovery
 		costmap_2d::Costmap2DROS* global_costmap_, *local_costmap_; 
 		
 		// The distance in meters away from the robot to include obstacles in the force field calculation
-		double obstacle_neightborhood_;
+		double obstacle_neighborhood_;
 		
 		// The factor to which the force field will be multyplied before it is sent to the mobile base as velocity
-		double force_field_to_velocity_scale_;
+		double velocity_scale_;
 		
 		// The maximum speed of the base to be commanded by the force field behavior
-		double max_cmd_speed_;
+		double max_velocity_;
 		
-		// The delay time for the base to move away from obstacles until stopping the base
-		double go_away_time_;
+		// The timeout value until recovery behavior gives up from moving away from obstacles
+		double timeout_;
+		
+		// The frequency update for the local costmap
+		double recovery_behavior_update_frequency_;
 		
 		// A twist publisher for cmd_vel used to publish a velocity to the mobile base
 		ros::Publisher twist_pub_;
