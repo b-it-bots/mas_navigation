@@ -32,10 +32,14 @@ namespace force_field_recovery
 			// Getting values from parameter server and storing into class variables
 			private_nh.param("/force_field_to_velocity_scale", force_field_to_velocity_scale_, 0.6);
 			private_nh.param("/obstacle_neightborhood", obstacle_neightborhood_, 0.6);
+			private_nh.param("/max_cmd_speed", max_cmd_speed_, 0.3);
+			private_nh.param("/go_away_time_", go_away_time_, 0.5);
 			
 			// Inform user about which parameters will be used for the recovery behavior
-			ROS_INFO("Recovery behavior, using Force field scale parameter : %f", (float) force_field_to_velocity_scale_);
-			ROS_INFO("Recovery behavior, using Force field neightborhood parameter : %f", (float) obstacle_neightborhood_);
+			ROS_INFO("Recovery behavior, using Force field force_field_to_velocity_scale parameter : %f", (float) force_field_to_velocity_scale_);
+			ROS_INFO("Recovery behavior, using Force field /obstacle_neightborhood parameter : %f", (float) obstacle_neightborhood_);
+			ROS_INFO("Recovery behavior, using Force field /max_cmd_spped parameter : %f", (float) max_cmd_speed_);
+			ROS_INFO("Recovery behavior, using Force field /go_away_time parameter : %f", (float) go_away_time_);
 			
 			//set up cmd_vel publisher
 			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1); //attention
@@ -103,6 +107,12 @@ namespace force_field_recovery
 		//8. move base in the direction of the force field
 		move_base(force_field(0)*force_field_to_velocity_scale_, force_field(1)*force_field_to_velocity_scale_);
 		
+		//9. wait for some time
+		ros::Duration(go_away_time_).sleep();
+		
+		//10. stop the base
+		move_base(0.0, 0.0);
+		
 	}
 	
 	pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmap_to_pointcloud(const costmap_2d::Costmap2D* costmap)
@@ -152,25 +162,28 @@ namespace force_field_recovery
 	
 	sensor_msgs::PointCloud2 ForceFieldRecovery::publish_cloud(pcl::PointCloud<pcl::PointXYZ> cloud, ros::Publisher &cloud_pub, std::string frame_id)
 	{
-		//this function receives a pcl pointcloud, transforms into ros pointcloud and then publishes
+		// This function receives a pcl pointcloud, transforms into ros pointcloud and then publishes the cloud
 		
-		//debug
-		//ROS_DEBUG("Publishing obstacle cloud");
-		//Print points of the cloud in terminal
+		ROS_DEBUG("Publishing obstacle cloud");
+		
+		// Print points of the cloud in terminal
 		pcl::PointCloud<pcl::PointXYZ>::const_iterator cloud_iterator = cloud.begin();
+		
 		int numPoints = 0;
+		
 		while (cloud_iterator != cloud.end())
 		{
-			//ROS_DEBUG("cloud [%d] = %f, %f, %f ", numPoints, (float)cloud_iterator->x, (float)cloud_iterator->y, (float)cloud_iterator->z);
+			ROS_DEBUG("cloud [%d] = %f, %f, %f ", numPoints, (float)cloud_iterator->x, (float)cloud_iterator->y, (float)cloud_iterator->z);
 			++cloud_iterator;
 			numPoints++;
 		}
-		//ROS_DEBUG("total number of points in the cloud = %d", numPoints);
 		
-		//creating a pointcloud2 data type
+		ROS_DEBUG("total number of points in the cloud = %d", numPoints);
+		
+		// Creating a pointcloud2 data type
 		pcl::PCLPointCloud2 cloud2;
 		
-		//converting normal cloud to pointcloud2 data type
+		// Converting normal cloud to pointcloud2 data type
 		pcl::toPCLPointCloud2(cloud, cloud2);
 		
 		//declaring a ros pointcloud data type
@@ -237,8 +250,7 @@ namespace force_field_recovery
 		{
 			Eigen::Vector3f each_point(cloud_iterator->x, cloud_iterator->y, 0);
 			
-			//debug
-			//ROS_DEBUG("Norm of the point : %f", each_point.norm());
+			ROS_DEBUG("Norm of the point : %f", each_point.norm());
 			
 			if (each_point.norm() < obstacle_neightborhood_)
 			{
@@ -252,7 +264,7 @@ namespace force_field_recovery
 		if (numPoints == 0) 
 		{
 			//Cloud is empty
-			ROS_INFO("Null force field, cloud is empty. You might want to check /max_range parameter");
+			ROS_INFO("Null force field, cloud is empty. You might want to check /obstacle_neightborhood_ parameter");
 			return Eigen::Vector3f(0, 0, 0);
 		}
 		
@@ -265,6 +277,10 @@ namespace force_field_recovery
 	void ForceFieldRecovery::move_base(double x, double y)
 	{
 		geometry_msgs::Twist twist_msg;
+		
+		//clamping x and y to maximum speed value
+		if(x > max_cmd_speed_) x = max_cmd_speed_;
+		if(y > max_cmd_speed_) y = max_cmd_speed_;
 		
 		ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
 		

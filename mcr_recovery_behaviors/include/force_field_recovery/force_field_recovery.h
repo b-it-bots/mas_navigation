@@ -158,6 +158,12 @@ namespace force_field_recovery
 		// The factor to which the force field will be multyplied before it is sent to the mobile base as velocity
 		double force_field_to_velocity_scale_;
 		
+		// The maximum speed of the base to be commanded by the force field behavior
+		double max_cmd_speed_;
+		
+		// The delay time for the base to move away from obstacles until stopping the base
+		double go_away_time_;
+		
 		// A twist publisher for cmd_vel used to publish a velocity to the mobile base
 		ros::Publisher twist_pub_;
 		
