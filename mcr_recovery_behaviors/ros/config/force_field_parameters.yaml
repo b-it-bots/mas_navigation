@@ -1,0 +1,5 @@
+velocity_scale_factor: 0.6
+obstacle_neighborhood: 0.6
+max_velocity: 0.2
+timeout: 5.0
+update_frequency : 20.0
