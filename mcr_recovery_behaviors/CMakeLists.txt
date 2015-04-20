@@ -26,7 +26,8 @@ add_definitions(${EIGEN_DEFINITIONS})
 catkin_package(
     INCLUDE_DIRS
       ros/include
-    LIBRARIES force_field_recovery
+    LIBRARIES 
+      force_field_recovery
     CATKIN_DEPENDS
         costmap_2d
         nav_core
