@@ -32,6 +32,7 @@ add_executable(relative_base_controller_node
 )
 add_dependencies(relative_base_controller_node 
   ${catkin_EXPORTED_TARGETS}
+  ${PROJECT_NAME}_gencfg
 )
 target_link_libraries(relative_base_controller_node
   ${catkin_LIBRARIES}
