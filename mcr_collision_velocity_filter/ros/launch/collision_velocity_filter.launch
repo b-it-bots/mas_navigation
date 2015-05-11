@@ -2,6 +2,8 @@
 <launch>
   <arg name="footprint_file" default="ERROR: did not specify argument --footprint_file--" />
   <arg name="scan_topics" default="ERROR: did not specify argument --scan_topics--" />
+  <arg name="cmd_vel_in" default="/cmd_vel_safe" />
+  <arg name="cmd_vel_out" default="/cmd_vel" />
 
   <node pkg="mcr_collision_velocity_filter" type="collision_velocity_filter_node" name="collision_velocity_filter" ns="mcr_navigation" output="screen">
 	<rosparam file="$(arg footprint_file)" command="load"/>
@@ -9,8 +11,8 @@
 
 	<rosparam param="scan_topics" subst_value="True">$(arg scan_topics)</rosparam>
 
-	<remap from="~cmd_vel_safe" to="/cmd_vel_safe" />
-	<remap from="~cmd_vel" to="/cmd_vel" />    
+	<remap from="~cmd_vel_safe" to="$(arg cmd_vel_in)" />
+	<remap from="~cmd_vel" to="$(arg cmd_vel_out)" />    
   </node>
 
 </launch>
