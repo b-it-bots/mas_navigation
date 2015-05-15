@@ -35,7 +35,7 @@ CollisionVelocityFilterNode::CollisionVelocityFilterNode() :
     ROS_INFO("Got footprint!");
 
     // Subscriber
-    sub_twist_ = nh.subscribe < geometry_msgs::Twist > ("cmd_vel_safe", 1, &CollisionVelocityFilterNode::twistCommadCallback, this);
+    sub_twist_ = nh.subscribe < geometry_msgs::Twist > ("cmd_vel_in", 1, &CollisionVelocityFilterNode::twistCommadCallback, this);
 
     // read parameters
     scan_topics = readScanTopicsFromParameterServer();
@@ -96,7 +96,7 @@ CollisionVelocityFilterNode::CollisionVelocityFilterNode() :
     }
 
     // Publisher
-    pub_safe_twist_ = nh.advertise < geometry_msgs::Twist > ("cmd_vel", 1);
+    pub_safe_twist_ = nh.advertise < geometry_msgs::Twist > ("cmd_vel_out", 1);
     pub_event_ = nh.advertise < std_msgs::String > ("event_out", 1);
 
     // Debug publisher

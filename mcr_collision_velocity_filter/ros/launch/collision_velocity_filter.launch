@@ -11,8 +11,8 @@
 
 	<rosparam param="scan_topics" subst_value="True">$(arg scan_topics)</rosparam>
 
-	<remap from="~cmd_vel_safe" to="$(arg cmd_vel_in)" />
-	<remap from="~cmd_vel" to="$(arg cmd_vel_out)" />    
+	<remap from="~cmd_vel_in" to="$(arg cmd_vel_in)" />
+	<remap from="~cmd_vel_out" to="$(arg cmd_vel_out)" />    
   </node>
 
 </launch>
