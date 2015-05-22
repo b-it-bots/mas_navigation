@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <iostream>
 
 
@@ -31,11 +31,11 @@ void event_out_cb(const std_msgs::StringConstPtr &event_out)
 TEST(relative_base_controller_test, test_move_without_event)
 {
   ros::NodeHandle nh("~");
-  ros::Publisher move_command_pub = nh.advertise<geometry_msgs::Twist>("/mcr_navigation/relative_base_controller/command", 1);
+  ros::Publisher move_command_pub = nh.advertise<geometry_msgs::PoseStamped>("/mcr_navigation/relative_base_controller/command", 1);
   ros::Subscriber cmd_vel_sub = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &cmd_vel_cb);
 
-  geometry_msgs::Twist move_command;
-  move_command.linear.x = 0.1;  
+  geometry_msgs::PoseStamped move_command;
+  move_command.pose.position.x = 0.1;  
   
   move_command_pub.publish(move_command);
   ros::Rate(0.1).sleep();
