@@ -62,13 +62,17 @@ install(DIRECTORY ros/launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
 )
 
-add_executable(relative_base_controller_test
-  ros/test/relative_base_controller_test.cpp
-)
 
-target_link_libraries(relative_base_controller_test
-  ${GTEST_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
+### TESTS
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
 
-add_rostest(ros/test/relative_base_controller.test)
+  add_rostest_gtest(relative_base_controller_test
+    ros/test/relative_base_controller.test
+    ros/test/relative_base_controller_test.cpp
+  )
+
+  target_link_libraries(relative_base_controller_test
+    ${catkin_LIBRARIES}
+  )
+endif()
