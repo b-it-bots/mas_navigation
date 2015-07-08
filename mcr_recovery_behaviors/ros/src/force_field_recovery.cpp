@@ -91,7 +91,7 @@ namespace force_field_recovery
 		bool detect_oscillation_is_enabled =false;
 		int oscillations = 0;
 		int loop_number = 0;
-		double current_angle, angle_difference;
+		double current_angle, previous_angle, angle_difference;
 		
 		ros::Rate loop_rate(recovery_behavior_update_frequency_);
 		
@@ -139,32 +139,32 @@ namespace force_field_recovery
 				//get the new force field angle
 				current_angle = atan2(force_field(1) , force_field(0));
 				
-				ROS_INFO("previous angle : %f", (float) previous_ff_angle_);
+				ROS_INFO("previous angle : %f", (float) previous_angle);
 				ROS_INFO("current angle : %f", (float) current_angle);
 
 				//compare the angles
-				angle_difference = atan2(sin(current_angle - previous_ff_angle_), cos(current_angle - previous_ff_angle_));
+				angle_difference = atan2(sin(current_angle - previous_angle), cos(current_angle - previous_angle));
 				
 				ROS_INFO("angle_difference = %f", (float) angle_difference);
 				
-				if(fabs(angle_difference) > 1.8) //160 degree, 2.5
+				if(fabs(angle_difference) > 1.8)
 				{
 					ROS_INFO("A big change in direction of the force filed was detected");
 					oscillations ++;
 				}
 
 				//making backup of the previous force field angle
-				previous_ff_angle_ = current_angle;
+				previous_angle = current_angle;
 			}
 			else
 			{
 				//compute angle of the first force field
-				previous_ff_angle_ = atan2(force_field(1) , force_field(0));
+				previous_angle = atan2(force_field(1) , force_field(0));
 				
 				ROS_INFO("--------");
 				ROS_INFO("force field x : %f", (float) force_field(0));
 				ROS_INFO("force field y : %f", (float) force_field(1));
-				ROS_INFO("angle : %f", (float) previous_ff_angle_);
+				ROS_INFO("angle : %f", (float) previous_angle);
 				ROS_INFO("--------");
 
 				//from second time, check for oscillations
