@@ -132,6 +132,15 @@ namespace force_field_recovery
 		Eigen::Vector3f compute_force_field(pcl::PointCloud<pcl::PointXYZ> cloud);
 		
 		/**
+		* @brief  Function used for detecting oscillations in the force field
+		* sometimes the robot gets stucked and has obstacles all around, this will result in an oscillating
+		* behavior, this means the robot will go back and forward until the timeout has passed, this function
+		* looks for big changes in the force field angle, therefore stopping the recovery if needed
+		* @param force_field the current force field from the obstacle cloud taken from the costmap
+		*/
+		bool oscillations(Eigen::Vector3f force_field);
+		
+		/**
 		* @brief  Move the base by publishing on cmd_vel a certain Vx and Vy
 		* @param x The x velocity to be send to the mobile base
 		* @param y The y velocity to be send to the mobile base
@@ -144,7 +153,11 @@ namespace force_field_recovery
 		 */
 		
 		// Flag used for preventing the class to initialize more than one time
-		bool initialized_; 
+		bool initialized_;
+		
+		// For avoiding to check oscillations in the first iteration, since there is no previous force
+		// to compare with
+		bool detect_oscillation_is_enabled_;
 		
 		// A pointer to the transform listener sent by move_base
 		tf::TransformListener* tf_; 
@@ -166,6 +179,16 @@ namespace force_field_recovery
 		
 		// The frequency update for the local costmap
 		double recovery_behavior_update_frequency_;
+		
+		// A backup of the previous force field angle, used to detect oscillations in the force
+		double previous_angle_;
+		
+		// Used for detecting oscillations in the force field by comparing the previous and current angle of
+		// the force field +/- some angular tolerance
+		double oscillation_angular_tolerance_;
+		
+		// The maximum number of allowed oscillations in the recovery behavior
+		int allowed_oscillations_;
 		
 		// A twist publisher for cmd_vel used to publish a velocity to the mobile base
 		ros::Publisher twist_pub_;

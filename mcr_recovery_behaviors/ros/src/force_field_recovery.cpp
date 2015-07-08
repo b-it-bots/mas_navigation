@@ -20,6 +20,11 @@ namespace force_field_recovery
 		{
 			// initialization, this code will be executed only once
 			
+			// setting initial value for member variables
+			detect_oscillation_is_enabled_ = false;
+			previous_angle_ = 0.0;
+			allowed_oscillations_ = 0;
+			
 			// receiving move_base variables and copying them over to class variables
 			tf_ = tf;
 			global_costmap_ = global_costmap;
@@ -35,6 +40,8 @@ namespace force_field_recovery
 			private_nh.param("max_velocity", max_velocity_, 0.3);
 			private_nh.param("timeout", timeout_, 3.0);
 			private_nh.param("update_frequency", recovery_behavior_update_frequency_, 5.0);
+			private_nh.param("oscillation_angular_tolerance",oscillation_angular_tolerance_, 1.8);
+			private_nh.param("allowed_oscillations", allowed_oscillations_, 0);
 			
 			// Inform user about which parameters will be used for the recovery behavior
 			ROS_INFO("Recovery behavior, using Force field velocity_scale parameter : %f", (float) velocity_scale_);
@@ -42,6 +49,8 @@ namespace force_field_recovery
 			ROS_INFO("Recovery behavior, using Force field max_velocity parameter : %f", (float) max_velocity_);
 			ROS_INFO("Recovery behavior, using Force field timeout parameter : %f", (float) timeout_);
 			ROS_INFO("Recovery behavior, using Force field recovery_behavior_update_frequency_ parameter : %f", (float) recovery_behavior_update_frequency_);
+			ROS_INFO("Recovery behavior, using Force field oscillation_angular_tolerance parameter : %f", (float) oscillation_angular_tolerance_);
+			ROS_INFO("Recovery behavior, using Force field allowed_oscillations parameter : %f", (float) allowed_oscillations_);
 			
 			// set up cmd_vel publisher
 			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
@@ -88,10 +97,8 @@ namespace force_field_recovery
 		ros::Time start_time = ros::Time::now();
 		
 		bool no_obstacles_in_radius = false;
-		bool detect_oscillation_is_enabled =false;
-		int oscillations = 0;
 		int loop_number = 0;
-		double current_angle, previous_angle, angle_difference;
+		double angle_difference;
 		
 		ros::Rate loop_rate(recovery_behavior_update_frequency_);
 		
@@ -118,50 +125,16 @@ namespace force_field_recovery
 			
 			// 7. move base in the direction of the force field
 			move_base(force_field(0)*velocity_scale_, force_field(1)*velocity_scale_);
-				
-			// 8. detect oscillation on the force field
-			// first time do not check for oscillations
-			if(detect_oscillation_is_enabled)
-			{
-				
-				// get the new force field angle
-				current_angle = atan2(force_field(1) , force_field(0));
-				
-				ROS_INFO("previous angle : %f", (float) previous_angle);
-				ROS_INFO("current angle : %f", (float) current_angle);
-
-				// compare the angles
-				angle_difference = atan2(sin(current_angle - previous_angle), cos(current_angle - previous_angle));
-				
-				ROS_INFO("angle_difference = %f", (float) angle_difference);
-				
-				if(fabs(angle_difference) > 1.8)
-				{
-					ROS_INFO("A big change in direction of the force filed was detected");
-					oscillations ++;
-				}
-
-				// making backup of the previous force field angle
-				previous_angle = current_angle;
-			}
-			else
-			{
-				// compute angle of the first force field
-				previous_angle = atan2(force_field(1) , force_field(0));
-
-				// from second time, check for oscillations
-				detect_oscillation_is_enabled = true;
-			}
 			
-			// 9. Checking for stopping the loop conditions
+			// 8. Checking for stopping the loop conditions
 			if(force_field(0) == 0 && force_field(1) == 0)
 			{
-				// force field = 0 means we are done and away from costmap obstacles
+				// force field = 0, means we are done and away from costmap obstacles
 				
 				no_obstacles_in_radius = true;
 				break;
 			}
-			else if(oscillations > 0)
+			else if(oscillations(force_field)) // stop the loop if there is oscillations in the ff
 			{
 				// this means the robot is stucked in a small area, causing the force field
 				// to go back and forward -> oscillating, therefore we need to stop the recovery
@@ -170,11 +143,11 @@ namespace force_field_recovery
 				break;
 			}
 			
-			//10. Control the frequency update for costmap update
+			//9. Control the frequency update for costmap update
 			loop_rate.sleep();
 		}
 		
-		// 11. Inform the user about the completition of the recovery behavior
+		// 10. Inform the user about the completition of the recovery behavior
 		if(no_obstacles_in_radius)
 		{
 			ROS_INFO("Force field recovery succesfull");
@@ -184,7 +157,7 @@ namespace force_field_recovery
 			ROS_WARN("Force field recovery behavior time out exceeded");
 		}
 		
-		// 12. stop the base
+		// 11. stop the base
 		move_base(0.0, 0.0);
 	}
 	
@@ -347,6 +320,57 @@ namespace force_field_recovery
 		ROS_DEBUG("Force vector = (%f, %f)", (float) force_vector(0), (float) force_vector(1));
 		
 		return force_vector;
+	}
+	
+	bool ForceFieldRecovery::oscillations(Eigen::Vector3f force_field)
+	{
+		
+		double current_angle = 0.0;
+		double angle_difference = 0.0;
+		
+		// do not check for oscillations the first time, since there is no previous force to compare with
+		if(detect_oscillation_is_enabled_)
+		{
+			// get the new force field angle
+			current_angle = atan2(force_field(1) , force_field(0));
+			
+			ROS_INFO("previous angle : %f", (float) previous_angle_);
+			ROS_INFO("current angle : %f", (float) current_angle);
+
+			// compare the angles
+			angle_difference = atan2(sin(current_angle - previous_angle_), cos(current_angle - previous_angle_));
+			
+			ROS_INFO("angle_difference = %f", (float) angle_difference);
+			
+			// detect if the force field angle has an abrupt angular change
+			if(fabs(angle_difference) > oscillation_angular_tolerance_)
+			{
+				ROS_INFO("A big change in direction of the force field was detected");
+				allowed_oscillations_ ++;
+			}
+
+			// making backup of the previous force field angle
+			previous_angle_ = current_angle;
+		}
+		else
+		{
+			// compute angle of the first force field
+			previous_angle_ = atan2(force_field(1) , force_field(0));
+
+			// starting from second time, check for oscillations
+			detect_oscillation_is_enabled_ = true;
+		}
+		
+		if(allowed_oscillations_ > 0)
+		{
+			// more than "n" allowed oscillations have been detected on the force field
+			return true;
+		}
+		else
+		{
+			// no more than "n" allowed oscillations were detected in the force field so far
+			return false;
+		}
 	}
 	
 	void ForceFieldRecovery::move_base(double x, double y)
