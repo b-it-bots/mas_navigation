@@ -166,6 +166,9 @@ namespace force_field_recovery
 		
 		// The frequency update for the local costmap
 		double recovery_behavior_update_frequency_;
+
+		// The frequency update for the local costmap
+		double previous_ff_angle_;
 		
 		// A twist publisher for cmd_vel used to publish a velocity to the mobile base
 		ros::Publisher twist_pub_;

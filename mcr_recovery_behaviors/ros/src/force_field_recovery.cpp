@@ -88,6 +88,11 @@ namespace force_field_recovery
 		ros::Time start_time = ros::Time::now();
 		
 		bool no_obstacles_in_radius = false;
+		bool detect_oscillation_is_enabled =false;
+		int oscillations = 0;
+		int loop_number = 0;
+		double current_angle, angle_difference;
+		
 		ros::Rate loop_rate(recovery_behavior_update_frequency_);
 		
 		//while certain time (timeout) or no obstacles inside radius do the loop 
@@ -116,15 +121,62 @@ namespace force_field_recovery
 				no_obstacles_in_radius = true;
 				break;
 			}
+			else if(oscillations > 0)
+			{
+				ROS_INFO("Oscillation detected! , will stop now...");
+				break;
+			}
 				
-			//7. publish force field as marker for visualization in rviz
-			//todo
+			//7. detect oscillation on the force field
+			
+			ROS_INFO("loop : %d", loop_number++);
+			ROS_INFO("force field : x = %f, y = %f", (float) force_field(0), (float) force_field(1));
+
+			//first time do not check for oscillations
+			if(detect_oscillation_is_enabled)
+			{
+				
+				//get the new force field angle
+				current_angle = atan2(force_field(1) , force_field(0));
+				
+				ROS_INFO("previous angle : %f", (float) previous_ff_angle_);
+				ROS_INFO("current angle : %f", (float) current_angle);
+
+				//compare the angles
+				angle_difference = atan2(sin(current_angle - previous_ff_angle_), cos(current_angle - previous_ff_angle_));
+				
+				ROS_INFO("angle_difference = %f", (float) angle_difference);
+				
+				if(fabs(angle_difference) > 1.8) //160 degree, 2.5
+				{
+					ROS_INFO("A big change in direction of the force filed was detected");
+					oscillations ++;
+				}
+
+				//making backup of the previous force field angle
+				previous_ff_angle_ = current_angle;
+			}
+			else
+			{
+				//compute angle of the first force field
+				previous_ff_angle_ = atan2(force_field(1) , force_field(0));
+				
+				ROS_INFO("--------");
+				ROS_INFO("force field x : %f", (float) force_field(0));
+				ROS_INFO("force field y : %f", (float) force_field(1));
+				ROS_INFO("angle : %f", (float) previous_ff_angle_);
+				ROS_INFO("--------");
+
+				//from second time, check for oscillations
+				detect_oscillation_is_enabled = true;
+			}
 			
 			//8. move base in the direction of the force field
 			move_base(force_field(0)*velocity_scale_, force_field(1)*velocity_scale_);
 			
 			//9. Control the frequency update for costmap update
 			loop_rate.sleep();
+
 		}
 		
 		if(no_obstacles_in_radius)
@@ -138,7 +190,6 @@ namespace force_field_recovery
 		
 		//10. stop the base
 		move_base(0.0, 0.0);
-		
 	}
 	
 	pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmap_to_pointcloud(const costmap_2d::Costmap2D* costmap)
@@ -313,7 +364,7 @@ namespace force_field_recovery
 		if(y > max_velocity_) y = max_velocity_;
 		else if(y < -max_velocity_) y = -max_velocity_;
 		
-		ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
+		//ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
 		
 		twist_msg.linear.x = x;
 		twist_msg.linear.y = y;
