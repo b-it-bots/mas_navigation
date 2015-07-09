@@ -33,6 +33,9 @@
 // For moving the mobile base (publish in cmd_vel)
 #include <geometry_msgs/Twist.h>
 
+// For publishing vecinity and force field vector as marker
+#include <visualization_msgs/Marker.h>
+
 // Ros PCL includes
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
@@ -136,9 +139,9 @@ namespace force_field_recovery
 		* sometimes the robot gets stucked and has obstacles all around, this will result in an oscillating
 		* behavior, this means the robot will go back and forward until the timeout has passed, this function
 		* looks for big changes in the force field angle, therefore stopping the recovery if needed
-		* @param force_field the current force field from the obstacle cloud taken from the costmap
+		* @param force_field the latest force field vector computed from the obstacle cloud taken from the costmap
 		*/
-		bool oscillations(Eigen::Vector3f force_field);
+		bool detect_oscillations(Eigen::Vector3f force_field, int &number_of_oscillations);
 		
 		/**
 		* @brief  Move the base by publishing on cmd_vel a certain Vx and Vy
@@ -146,6 +149,11 @@ namespace force_field_recovery
 		* @param y The y velocity to be send to the mobile base
 		*/
 		void move_base(double x, double y);
+		
+		/**
+		* @brief  Publish vecinity radius as a marker for visualization purposes
+		*/
+		void publish_obstacle_neighborhood();
 		
 		/*
 		 * private member variables
@@ -198,6 +206,10 @@ namespace force_field_recovery
 		
 		// A pointcloud publisher that will publish the obstacle cloud in base_footprint reference frame
 		ros::Publisher base_footprint_cloud_pub_;
+		
+		// Publisher for visualizing the vecinity, this means the points from the costmap that will be
+		// inlcuded to compute the force field vector
+		ros::Publisher vecinity_pub_;
 	};
 };
 

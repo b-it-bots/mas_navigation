@@ -40,20 +40,30 @@ namespace force_field_recovery
 			private_nh.param("max_velocity", max_velocity_, 0.3);
 			private_nh.param("timeout", timeout_, 3.0);
 			private_nh.param("update_frequency", recovery_behavior_update_frequency_, 5.0);
-			private_nh.param("oscillation_angular_tolerance",oscillation_angular_tolerance_, 1.8);
+			private_nh.param("oscillation_angular_tolerance",oscillation_angular_tolerance_, 2.8); //1.8
 			private_nh.param("allowed_oscillations", allowed_oscillations_, 0);
 			
 			// Inform user about which parameters will be used for the recovery behavior
-			ROS_INFO("Recovery behavior, using Force field velocity_scale parameter : %f", (float) velocity_scale_);
-			ROS_INFO("Recovery behavior, using Force field obstacle_neighborhood parameter : %f", (float) obstacle_neighborhood_);
-			ROS_INFO("Recovery behavior, using Force field max_velocity parameter : %f", (float) max_velocity_);
-			ROS_INFO("Recovery behavior, using Force field timeout parameter : %f", (float) timeout_);
-			ROS_INFO("Recovery behavior, using Force field recovery_behavior_update_frequency_ parameter : %f", (float) recovery_behavior_update_frequency_);
-			ROS_INFO("Recovery behavior, using Force field oscillation_angular_tolerance parameter : %f", (float) oscillation_angular_tolerance_);
-			ROS_INFO("Recovery behavior, using Force field allowed_oscillations parameter : %f", (float) allowed_oscillations_);
+			ROS_INFO("Recovery behavior, using Force field velocity_scale parameter : %f"
+			, (float) velocity_scale_);
+			ROS_INFO("Recovery behavior, using Force field obstacle_neighborhood parameter : %f"
+			, (float) obstacle_neighborhood_);
+			ROS_INFO("Recovery behavior, using Force field max_velocity parameter : %f"
+			, (float) max_velocity_);
+			ROS_INFO("Recovery behavior, using Force field timeout parameter : %f"
+			, (float) timeout_);
+			ROS_INFO("Recovery behavior, using Force field recovery_behavior_update_frequency_ parameter : %f"
+			, (float) recovery_behavior_update_frequency_);
+			ROS_INFO("Recovery behavior, using Force field oscillation_angular_tolerance parameter : %f"
+			, (float) oscillation_angular_tolerance_);
+			ROS_INFO("Recovery behavior, using Force field allowed_oscillations parameter : %f"
+			, (float) allowed_oscillations_);
 			
 			// set up cmd_vel publisher
-			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel_prio_medium", 1);
+			
+			// set up marker publishers
+			vecinity_pub_ = private_nh.advertise<visualization_msgs::Marker>( "/force_field_obstacle_neighborhood", 1);
 			
 			// set up cloud publishers topic
 			map_cloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2> ("/obstacle_cloud_map", 1);
@@ -97,13 +107,16 @@ namespace force_field_recovery
 		ros::Time start_time = ros::Time::now();
 		
 		bool no_obstacles_in_radius = false;
-		int loop_number = 0;
-		double angle_difference;
+		bool timeout = false;
+		int number_of_oscillations = 0;
 		
 		ros::Rate loop_rate(recovery_behavior_update_frequency_);
 		
+		//reset allowed_oscillations_ on each recovery behavior call
+		allowed_oscillations_ = 0;
+		
 		// while certain time (timeout) or no obstacles inside radius do the loop 
-		while((ros::Duration(ros::Time::now() - start_time).toSec() < timeout_) && !no_obstacles_in_radius)
+		while(!timeout)
 		{
 			// 1. getting a snapshot of the costmap
 			costmap_2d::Costmap2D* costmap_snapshot = costmap_ros->getCostmap();
@@ -124,17 +137,20 @@ namespace force_field_recovery
 			Eigen::Vector3f force_field = compute_force_field(obstacle_cloud_bf);
 			
 			// 7. move base in the direction of the force field
-			move_base(force_field(0)*velocity_scale_, force_field(1)*velocity_scale_);
+			double cmd_vel_x = force_field(0)*velocity_scale_;
+			double cmd_vel_y = force_field(1)*velocity_scale_;
+			ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) cmd_vel_x, (float) cmd_vel_y);
+			move_base(cmd_vel_x, cmd_vel_y);
 			
 			// 8. Checking for stopping the loop conditions
 			if(force_field(0) == 0 && force_field(1) == 0)
 			{
-				// force field = 0, means we are done and away from costmap obstacles
+				// force field = 0, 0 : means we are done and away from costmap obstacles
 				
 				no_obstacles_in_radius = true;
 				break;
 			}
-			else if(oscillations(force_field)) // stop the loop if there is oscillations in the ff
+			else if(detect_oscillations(force_field, number_of_oscillations)) // stop the loop if there is oscillations in the ff
 			{
 				// this means the robot is stucked in a small area, causing the force field
 				// to go back and forward -> oscillating, therefore we need to stop the recovery
@@ -142,22 +158,28 @@ namespace force_field_recovery
 				ROS_INFO("Oscillation detected! , will stop now...");
 				break;
 			}
+			else if(ros::Duration(ros::Time::now() - start_time).toSec() > timeout_)
+			{
+				//timeout, recovery behavior has been executed for timeout seconds and still no success, then abort
+				ROS_WARN("Force field recovery behavior time out exceeded");
+				timeout = true;
+				break;
+			}
 			
-			//9. Control the frequency update for costmap update
+			//9. publish markers (vecinity and force field vector) for visualization purposes
+			publish_obstacle_neighborhood();
+			
+			//10. Control the frequency update for costmap update
 			loop_rate.sleep();
 		}
 		
-		// 10. Inform the user about the completition of the recovery behavior
+		// 11. Inform the user about the completition of the recovery behavior
 		if(no_obstacles_in_radius)
 		{
 			ROS_INFO("Force field recovery succesfull");
 		}
-		else
-		{
-			ROS_WARN("Force field recovery behavior time out exceeded");
-		}
 		
-		// 11. stop the base
+		// 12. stop the base
 		move_base(0.0, 0.0);
 	}
 	
@@ -322,8 +344,9 @@ namespace force_field_recovery
 		return force_vector;
 	}
 	
-	bool ForceFieldRecovery::oscillations(Eigen::Vector3f force_field)
+	bool ForceFieldRecovery::detect_oscillations(Eigen::Vector3f force_field, int &number_of_oscillations)
 	{
+		// This function detects oscillations in the force field and stops the recovery
 		
 		double current_angle = 0.0;
 		double angle_difference = 0.0;
@@ -346,7 +369,7 @@ namespace force_field_recovery
 			if(fabs(angle_difference) > oscillation_angular_tolerance_)
 			{
 				ROS_INFO("A big change in direction of the force field was detected");
-				allowed_oscillations_ ++;
+				number_of_oscillations ++;
 			}
 
 			// making backup of the previous force field angle
@@ -361,7 +384,7 @@ namespace force_field_recovery
 			detect_oscillation_is_enabled_ = true;
 		}
 		
-		if(allowed_oscillations_ > 0)
+		if(number_of_oscillations > allowed_oscillations_)
 		{
 			// more than "n" allowed oscillations have been detected on the force field
 			return true;
@@ -375,6 +398,8 @@ namespace force_field_recovery
 	
 	void ForceFieldRecovery::move_base(double x, double y)
 	{
+		// This function receives x and y velocity and publishes to cmd_vel topic to move the mobile base
+		
 		geometry_msgs::Twist twist_msg;
 		
 		// clamping x and y to maximum speed value
@@ -383,8 +408,6 @@ namespace force_field_recovery
 		
 		if(y > max_velocity_) y = max_velocity_;
 		else if(y < -max_velocity_) y = -max_velocity_;
-		
-		ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
 		
 		twist_msg.linear.x = x;
 		twist_msg.linear.y = y;
@@ -395,5 +418,53 @@ namespace force_field_recovery
 		
 		twist_pub_.publish(twist_msg);
 	}
-
+	
+	//void ForceFieldRecovery::ff_as_marker(Eigen::Vector3f force_field)
+	//{
+		// This function is for visualization of the force_field vector in rviz
+		
+	//}
+	
+	void ForceFieldRecovery::publish_obstacle_neighborhood()
+	{
+		ROS_INFO("Publishing obstacle neighbourhood...");
+		// This function is for visualization of the vecinity area in rviz
+		
+		// declaring a marker object
+		visualization_msgs::Marker marker;
+		
+		// filling the required data for the marker
+		marker.header.frame_id = "base_footprint";
+		marker.header.stamp = ros::Time::now();
+		marker.ns = "force_field_visualization";
+		marker.id = 0;
+		marker.type = visualization_msgs::Marker::CYLINDER;
+		//marker.type = visualization_msgs::Marker::CUBE;
+		marker.action = visualization_msgs::Marker::ADD;
+		
+		marker.pose.position.x = 0;
+		marker.pose.position.y = 0;
+		marker.pose.position.z = 0;
+		
+		marker.pose.orientation.x = 0.0;
+		marker.pose.orientation.y = 0.0;
+		marker.pose.orientation.z = 0.0;
+		marker.pose.orientation.w = 1.0;
+		
+		//duration of the marker : forever
+		marker.lifetime = ros::Duration(0);
+		
+		marker.scale.x = obstacle_neighborhood_ * 2;
+		marker.scale.y = obstacle_neighborhood_ * 2;
+		marker.scale.z = 0.1;
+		
+		marker.color.a = 0.5; //alpha (transparency level)
+		marker.color.r = 0.0;
+		marker.color.g = 1.0;
+		marker.color.b = 0.0;
+		
+		// publish the vecinity as cylinder marker
+		vecinity_pub_.publish(marker);
+		
+	}
 };
