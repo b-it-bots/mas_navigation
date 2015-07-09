@@ -63,7 +63,8 @@ namespace force_field_recovery
 			twist_pub_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel_prio_medium", 1);
 			
 			// set up marker publishers
-			vecinity_pub_ = private_nh.advertise<visualization_msgs::Marker>( "/force_field_obstacle_neighborhood", 1);
+			neighbourhood_pub_ = private_nh.advertise<visualization_msgs::Marker>( "/force_field_obstacle_neighborhood", 1);
+			ff_marker_pub_ = private_nh.advertise<visualization_msgs::Marker>( "/force_field_vector", 1);
 			
 			// set up cloud publishers topic
 			map_cloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2> ("/obstacle_cloud_map", 1);
@@ -166,8 +167,9 @@ namespace force_field_recovery
 				break;
 			}
 			
-			//9. publish markers (vecinity and force field vector) for visualization purposes
+			//9. publish markers (neighbourhood and force field vector) for visualization purposes
 			publish_obstacle_neighborhood();
+			publish_ff_as_marker(force_field);
 			
 			//10. Control the frequency update for costmap update
 			loop_rate.sleep();
@@ -419,52 +421,96 @@ namespace force_field_recovery
 		twist_pub_.publish(twist_msg);
 	}
 	
-	//void ForceFieldRecovery::ff_as_marker(Eigen::Vector3f force_field)
-	//{
+	void ForceFieldRecovery::publish_ff_as_marker(Eigen::Vector3f force_field)
+	{
 		// This function is for visualization of the force_field vector in rviz
 		
-	//}
+		//variable declaration
+		double force_field_angle = 0.0;
+		tf::Transform force_field_tf;
+		visualization_msgs::Marker ff_marker;
+		
+		// filling the required data for the marker
+		ff_marker.header.frame_id = "base_footprint";
+		ff_marker.header.stamp = ros::Time::now();
+		ff_marker.ns = "force_field_visualization";
+		ff_marker.id = 1;
+		ff_marker.type = visualization_msgs::Marker::ARROW;
+		ff_marker.action = visualization_msgs::Marker::ADD;
+		
+		// setting origin of the marker to 0, 0, 0 (of base_footprint frame)
+		ff_marker.pose.position.x = 0.0;
+		ff_marker.pose.position.y = 0.0;
+		ff_marker.pose.position.z = 0.0;
+		
+		//computing force field yaw angle
+		force_field_angle = atan2(force_field(1), force_field(0));
+		
+		// transforming force field angle from radians to quaternion by setting yaw value
+		tf::Quaternion q = tf::createQuaternionFromRPY(0.0, 0.0, force_field_angle);
+		
+		//assign orientation of the quaternion to the marker
+		ff_marker.pose.orientation.x = q.x();
+		ff_marker.pose.orientation.y = q.y();
+		ff_marker.pose.orientation.z = q.z();
+		ff_marker.pose.orientation.w = q.w();
+		
+		// duration of the ff_marker : 0 - forever
+		ff_marker.lifetime = ros::Duration(2.0);
+		
+		ff_marker.scale.x = 0.6;
+		ff_marker.scale.y = 0.1;
+		ff_marker.scale.z = 0.1;
+		
+		//alpha (transparency level)
+		ff_marker.color.a = 0.9; 
+		
+		//rgb for orange/yellow
+		ff_marker.color.r = 255.0;
+		ff_marker.color.g = 153.0;
+		ff_marker.color.b = 0.0;
+		
+		// publish the force field vector as marker
+		ff_marker_pub_.publish(ff_marker);
+	}
 	
 	void ForceFieldRecovery::publish_obstacle_neighborhood()
 	{
-		ROS_INFO("Publishing obstacle neighbourhood...");
-		// This function is for visualization of the vecinity area in rviz
+		// This function is for visualization of the neighbourhood area in rviz
 		
 		// declaring a marker object
-		visualization_msgs::Marker marker;
+		visualization_msgs::Marker neighbourhood_marker;
 		
 		// filling the required data for the marker
-		marker.header.frame_id = "base_footprint";
-		marker.header.stamp = ros::Time::now();
-		marker.ns = "force_field_visualization";
-		marker.id = 0;
-		marker.type = visualization_msgs::Marker::CYLINDER;
-		//marker.type = visualization_msgs::Marker::CUBE;
-		marker.action = visualization_msgs::Marker::ADD;
+		neighbourhood_marker.header.frame_id = "base_footprint";
+		neighbourhood_marker.header.stamp = ros::Time::now();
+		neighbourhood_marker.ns = "force_field_visualization";
+		neighbourhood_marker.id = 0;
+		neighbourhood_marker.type = visualization_msgs::Marker::CYLINDER;
+		neighbourhood_marker.action = visualization_msgs::Marker::ADD;
 		
-		marker.pose.position.x = 0;
-		marker.pose.position.y = 0;
-		marker.pose.position.z = 0;
+		neighbourhood_marker.pose.position.x = 0.0;
+		neighbourhood_marker.pose.position.y = 0.0;
+		neighbourhood_marker.pose.position.z = 0.0;
 		
-		marker.pose.orientation.x = 0.0;
-		marker.pose.orientation.y = 0.0;
-		marker.pose.orientation.z = 0.0;
-		marker.pose.orientation.w = 1.0;
+		neighbourhood_marker.pose.orientation.x = 0.0;
+		neighbourhood_marker.pose.orientation.y = 0.0;
+		neighbourhood_marker.pose.orientation.z = 0.0;
+		neighbourhood_marker.pose.orientation.w = 1.0;
 		
 		//duration of the marker : forever
-		marker.lifetime = ros::Duration(0);
+		neighbourhood_marker.lifetime = ros::Duration(5.0);
 		
-		marker.scale.x = obstacle_neighborhood_ * 2;
-		marker.scale.y = obstacle_neighborhood_ * 2;
-		marker.scale.z = 0.1;
+		neighbourhood_marker.scale.x = obstacle_neighborhood_ * 2.0;
+		neighbourhood_marker.scale.y = obstacle_neighborhood_ * 2.0;
+		neighbourhood_marker.scale.z = 0.1;
 		
-		marker.color.a = 0.5; //alpha (transparency level)
-		marker.color.r = 0.0;
-		marker.color.g = 1.0;
-		marker.color.b = 0.0;
+		neighbourhood_marker.color.a = 0.5; //alpha (transparency level)
+		neighbourhood_marker.color.r = 0.0;
+		neighbourhood_marker.color.g = 1.0;
+		neighbourhood_marker.color.b = 0.0;
 		
-		// publish the vecinity as cylinder marker
-		vecinity_pub_.publish(marker);
-		
+		// publish the neighbourhood as cylinder marker
+		neighbourhood_pub_.publish(neighbourhood_marker);
 	}
 };

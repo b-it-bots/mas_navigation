@@ -33,7 +33,7 @@
 // For moving the mobile base (publish in cmd_vel)
 #include <geometry_msgs/Twist.h>
 
-// For publishing vecinity and force field vector as marker
+// For publishing neighbourhood and force field vector as marker
 #include <visualization_msgs/Marker.h>
 
 // Ros PCL includes
@@ -151,9 +151,15 @@ namespace force_field_recovery
 		void move_base(double x, double y);
 		
 		/**
-		* @brief  Publish vecinity radius as a marker for visualization purposes
+		* @brief  Publish neighbourhood radius as a marker for visualization purposes
 		*/
 		void publish_obstacle_neighborhood();
+		
+		/**
+		* @brief  Publish the force field vector as marker for visualization purposes
+		* @param force_field the force field vector, computed based on obstacles comming from the costmap
+		*/
+		void publish_ff_as_marker(Eigen::Vector3f force_field);
 		
 		/*
 		 * private member variables
@@ -207,9 +213,12 @@ namespace force_field_recovery
 		// A pointcloud publisher that will publish the obstacle cloud in base_footprint reference frame
 		ros::Publisher base_footprint_cloud_pub_;
 		
-		// Publisher for visualizing the vecinity, this means the points from the costmap that will be
+		// Publisher for visualizing the neighbourhood, this means the points from the costmap that will be
 		// inlcuded to compute the force field vector
-		ros::Publisher vecinity_pub_;
+		ros::Publisher neighbourhood_pub_;
+		
+		// Publisher for the force field vector as marker for visualization purposes
+		ros::Publisher ff_marker_pub_;
 	};
 };
 
