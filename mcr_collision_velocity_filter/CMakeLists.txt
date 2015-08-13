@@ -46,7 +46,16 @@ target_link_libraries(collision_velocity_filter_node
   mcr_collision_velocity_filter
 )
 
-### Install ###
+
+### TESTS
+if(CATKIN_ENABLE_TESTING)
+  find_package(roslaunch REQUIRED)
+  
+  roslaunch_add_file_check(ros/launch footprint_file:=${PROJECT_SOURCE_DIR}/ros/test/footprint.yaml)
+endif()
+
+
+### INSTALLS ###
 install(
   TARGETS 
     collision_velocity_filter_node

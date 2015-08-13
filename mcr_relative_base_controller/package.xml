@@ -8,6 +8,7 @@
     and moves the base by the desired amount while monitoring the odometry.
   </description>
 
+  <maintainer email="arka.mallick@smail.inf.h-brs.de">Arka Mallick</maintainer>
   <maintainer email="santosh.thoduka@smail.inf.h-brs.de">Santosh Thoduka</maintainer>
 
   <license>GPLv3</license>
@@ -20,6 +21,8 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>roslaunch</build_depend>
+  <build_depend>rostest</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>tf</build_depend>  
  
