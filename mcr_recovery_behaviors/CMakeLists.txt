@@ -39,6 +39,7 @@ catkin_package(
 add_library(force_field_recovery ros/src/force_field_recovery.cpp)
 target_link_libraries(force_field_recovery ${catkin_LIBRARIES})
 
+### INSTALLS
 install(TARGETS force_field_recovery
        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
