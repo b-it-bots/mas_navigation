@@ -190,7 +190,7 @@ namespace force_field_recovery
 		
 		// For avoiding to check oscillations in the first iteration, since there is no previous force
 		// to compare with
-		bool is_oscillation_detection_enabled_;
+		bool is_oscillation_detection_initialized_;
 		
 		// A pointer to the transform listener sent by move_base
 		tf::TransformListener* tf_; 

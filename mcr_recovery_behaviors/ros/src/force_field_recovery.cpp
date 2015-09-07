@@ -14,7 +14,7 @@ namespace force_field_recovery
 		local_costmap_ = NULL;
 		tf_ = NULL;
 		initialized_ = NULL;
-		is_oscillation_detection_enabled_ = false;
+		is_oscillation_detection_initialized_ = false;
 		previous_angle_ = 0.0;
 		allowed_oscillations_ = 0;
 		number_of_oscillations_ = 0;
@@ -372,7 +372,7 @@ namespace force_field_recovery
 		double angle_difference = 0.0;
 		
 		// do not check for oscillations the first time, since there is no previous force to compare with
-		if(is_oscillation_detection_enabled_)
+		if(is_oscillation_detection_initialized_)
 		{
 			// get the new force field angle
 			current_angle = atan2(force_field(1) , force_field(0));
@@ -401,7 +401,7 @@ namespace force_field_recovery
 			previous_angle_ = atan2(force_field(1) , force_field(0));
 
 			// starting from second time, check for oscillations
-			is_oscillation_detection_enabled_ = true;
+			is_oscillation_detection_initialized_ = true;
 		}
 		
 		if(number_of_oscillations_ < allowed_oscillations_)
