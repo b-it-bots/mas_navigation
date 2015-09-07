@@ -120,6 +120,12 @@ namespace force_field_recovery
 		double cmd_vel_x = 0.0;
 		double cmd_vel_y = 0.0;
 		
+		costmap_2d::Costmap2D* costmap_snapshot;
+		pcl::PointCloud<pcl::PointXYZ> obstacle_cloud;
+		sensor_msgs::PointCloud2 global_frame_obstacle_cloud;
+		pcl::PointCloud<pcl::PointXYZ> robot_frame_oc;
+		Eigen::Vector3f force_field;
+		
 		ros::Rate loop_rate(recovery_behavior_update_frequency_);
 		
 		//reset allowed_oscillations_ on each recovery behavior call
@@ -132,22 +138,22 @@ namespace force_field_recovery
 		while(!timeout)
 		{
 			// 1. getting a snapshot of the costmap
-			costmap_2d::Costmap2D* costmap_snapshot = costmap_ros->getCostmap();
+			costmap_snapshot = costmap_ros->getCostmap();
 			
 			// 2. convert obstacles inside costmap into pointcloud
-			pcl::PointCloud<pcl::PointXYZ> obstacle_cloud = costmapToPointcloud(costmap_snapshot);
+			obstacle_cloud = costmapToPointcloud(costmap_snapshot);
 			
 			// 3. publish global frame obstacle cloud
-			sensor_msgs::PointCloud2 global_frame_obstacle_cloud = publishCloud(obstacle_cloud, pub_global_frame_cloud_, robot_global_frame_);
+			global_frame_obstacle_cloud = publishCloud(obstacle_cloud, pub_global_frame_cloud_, robot_global_frame_);
 			
 			// 4. Change cloud to the reference frame of the robot (robot_frame_oc = robot frame obstacle cloud)
-			pcl::PointCloud<pcl::PointXYZ> robot_frame_oc = changeCloudReferenceFrame(global_frame_obstacle_cloud, robot_base_frame_);
+			robot_frame_oc = changeCloudReferenceFrame(global_frame_obstacle_cloud, robot_base_frame_);
 			
 			// 5. publish robot frame obstacle cloud
 			publishCloud(robot_frame_oc, pub_robot_frame_cloud_, robot_base_frame_);
 			
 			// 6. compute force field
-			Eigen::Vector3f force_field = computeForceField(robot_frame_oc);
+			force_field = computeForceField(robot_frame_oc);
 			
 			// 7. move base in the direction of the force field
 			cmd_vel_x = force_field(0)*velocity_scale_;
