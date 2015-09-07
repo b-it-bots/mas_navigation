@@ -340,7 +340,8 @@ namespace force_field_recovery
 			// force field = 0, 0 : means we are done and away from costmap obstacles
 			
 			no_obstacles_in_radius = true;
-			return true;
+			
+			return no_obstacles_in_radius;
 		}
 		// B. recovery behavior oscillation detection
 		else if(detectOscillations(force_field))
@@ -357,7 +358,8 @@ namespace force_field_recovery
 			//timeout, recovery behavior has been executed for timeout seconds and still no success, then abort
 			ROS_WARN("Force field recovery behavior time out exceeded");
 			timeout = true;
-			return true;
+			
+			return timeout;
 		}
 		
 		// continue the execution of the recovery behavior
