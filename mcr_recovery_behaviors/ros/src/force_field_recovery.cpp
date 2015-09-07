@@ -27,6 +27,10 @@ namespace force_field_recovery
 			tf_ = tf;
 			global_costmap_ = global_costmap;
 			local_costmap_ = local_costmap;
+			// robot_base_frame_ commonly can be base_footprint frame
+			robot_base_frame_ = local_costmap_->getBaseFrameID();
+			// robot_global_frame_ commonly can be map frame
+			robot_global_frame_ = local_costmap_->getGlobalFrameID();
 			
 			ros::NodeHandle private_nh("~/" + name);
 
@@ -40,7 +44,6 @@ namespace force_field_recovery
 			private_nh.param("update_frequency", recovery_behavior_update_frequency_, 5.0);
 			private_nh.param("oscillation_angular_tolerance", oscillation_angular_tolerance_, 2.8);
 			private_nh.param("allowed_oscillations", allowed_oscillations_, 0);
-			//private_nh.param("reference_frame", reference_frame_, "base_footprint");
 			
 			// Inform user about which parameters will be used for the recovery behavior
 			ROS_INFO("Force field recovery behavior parameters : ");
@@ -58,8 +61,10 @@ namespace force_field_recovery
 			, (float) oscillation_angular_tolerance_);
 			ROS_INFO("Allowed_oscillations parameter : %f"
 			, (float) allowed_oscillations_);
-			ROS_INFO("Reference frame : %s"
-			, reference_frame_.data.c_str());
+			ROS_INFO("Robot base reference frame : %s"
+			, robot_base_frame_.c_str());
+			ROS_INFO("Robot global reference frame : %s"
+			, robot_global_frame_.c_str());
 			
 			// set up cmd_vel publisher
 			pub_twist_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
@@ -69,8 +74,8 @@ namespace force_field_recovery
 			pub_ff_marker_ = private_nh.advertise<visualization_msgs::Marker>( "force_field_vector", 1);
 			
 			// set up cloud publishers topic
-			map_cloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2> ("obstacle_cloud_map", 1);
-			pub_base_footprint_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("obstacle_cloud_base_link", 1);
+			pub_global_frame_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("obstacle_cloud_map", 1);
+			pub_robot_frame_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("obstacle_cloud_base_link", 1);
 			
 			// setting initialized flag to true, preventing this code to be executed twice
 			initialized_ = true;
@@ -129,17 +134,17 @@ namespace force_field_recovery
 			// 2. convert obstacles inside costmap into pointcloud
 			pcl::PointCloud<pcl::PointXYZ> obstacle_cloud = costmapToPointcloud(costmap_snapshot);
 			
-			// 3. publish obstacle cloud
-			sensor_msgs::PointCloud2 ros_obstacle_cloud = publishCloud(obstacle_cloud, map_cloud_pub_, "/map");
+			// 3. publish global frame obstacle cloud
+			sensor_msgs::PointCloud2 global_frame_obstacle_cloud = publishCloud(obstacle_cloud, pub_global_frame_cloud_, robot_global_frame_);
 			
-			// 4. Change cloud to the reference frame of the robot
-			pcl::PointCloud<pcl::PointXYZ> obstacle_cloud_bf = changeCloudReferenceFrame(ros_obstacle_cloud, "/base_footprint");
+			// 4. Change cloud to the reference frame of the robot (robot_frame_oc = robot frame obstacle cloud)
+			pcl::PointCloud<pcl::PointXYZ> robot_frame_oc = changeCloudReferenceFrame(global_frame_obstacle_cloud, robot_base_frame_);
 			
-			// 5. publish base link obstacle cloud
-			publishCloud(obstacle_cloud_bf, pub_base_footprint_cloud_, "/base_footprint");
+			// 5. publish robot frame obstacle cloud
+			publishCloud(robot_frame_oc, pub_robot_frame_cloud_, robot_base_frame_);
 			
 			// 6. compute force field
-			Eigen::Vector3f force_field = computeForceField(obstacle_cloud_bf);
+			Eigen::Vector3f force_field = computeForceField(robot_frame_oc);
 			
 			// 7. move base in the direction of the force field
 			cmd_vel_x = force_field(0)*velocity_scale_;
@@ -402,7 +407,10 @@ namespace force_field_recovery
 	
 	void ForceFieldRecovery::publishVelocities(double x, double y)
 	{
-		ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
+		if(x != 0 && y != 0) //Do not print if x and y are zero
+		{
+			ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
+		}
 		
 		geometry_msgs::Twist twist_msg;
 		
@@ -430,7 +438,7 @@ namespace force_field_recovery
 		visualization_msgs::Marker ff_marker;
 		
 		// filling the required data for the marker
-		ff_marker.header.frame_id = reference_frame_.data.c_str();
+		ff_marker.header.frame_id = robot_base_frame_.c_str();
 		ff_marker.header.stamp = ros::Time::now();
 		ff_marker.ns = "force_field";
 		ff_marker.id = 1;
@@ -476,7 +484,7 @@ namespace force_field_recovery
 		visualization_msgs::Marker neighbourhood_marker;
 		
 		// filling the required data for the marker
-		neighbourhood_marker.header.frame_id = reference_frame_.data.c_str();
+		neighbourhood_marker.header.frame_id = robot_base_frame_.c_str();
 		neighbourhood_marker.header.stamp = ros::Time::now();
 		neighbourhood_marker.ns = "force_field";
 		neighbourhood_marker.id = 0;

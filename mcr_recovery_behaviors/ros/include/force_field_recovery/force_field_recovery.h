@@ -94,7 +94,7 @@ namespace force_field_recovery
 		* step 1. Get the current costmap
 		* step 2. Convert all obstacles (cost = 254) inside local costmap into pointcloud
 		* step 3. Publish the previous obtained obstacle pointcloud for debugging purposes
-		* step 4. Change cloud to the reference frame of the robot (base footprint) since 
+		* step 4. Change cloud to the reference frame of the robot since 
 		*         it was in map frame and needs to be in the reference frame of the robot
 		* step 5. Publish base link obstacle cloud for debugging purposes, the cloud must match
 		*         with the previous obstacle pointcloud
@@ -226,17 +226,20 @@ namespace force_field_recovery
 		// Variable used to count how many oscillations the robot has made so far
 		int number_of_oscillations_;
 		
-		// For storing the recovery behavior reference frame
-		std_msgs::String reference_frame_;
+		// For storing the recovery behavior robot reference frame
+		std::string robot_base_frame_;
+		
+		// For storing the recovery behavior global reference frame (costmap reference frame)
+		std::string robot_global_frame_;
 		
 		// A twist publisher for cmd_vel used to publish a velocity to the mobile base
 		ros::Publisher pub_twist_;
 		
 		// A pointcloud publisher that will publish the obstacle cloud in map reference frame
-		ros::Publisher map_cloud_pub_;
+		ros::Publisher pub_global_frame_cloud_;
 		
-		// A pointcloud publisher that will publish the obstacle cloud in base_footprint reference frame
-		ros::Publisher pub_base_footprint_cloud_;
+		// A pointcloud publisher that will publish the obstacle cloud in robot base reference frame
+		ros::Publisher pub_robot_frame_cloud_;
 		
 		// Publisher for visualizing the neighbourhood, this means the points from the costmap that will be
 		// inlcuded to compute the force field vector
