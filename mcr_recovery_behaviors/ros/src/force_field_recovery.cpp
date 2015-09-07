@@ -341,6 +341,8 @@ namespace force_field_recovery
 			
 			no_obstacles_in_radius = true;
 			
+			ROS_INFO("No more obstacles in radius");
+			
 			return no_obstacles_in_radius;
 		}
 		// B. recovery behavior oscillation detection
