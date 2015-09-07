@@ -70,7 +70,7 @@ namespace force_field_recovery
 			, robot_global_frame_.c_str());
 			
 			// set up cmd_vel publisher
-			pub_twist_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+			pub_twist_ = private_nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 			
 			// set up marker publishers
 			pub_neighbourhood_ = private_nh.advertise<visualization_msgs::Marker>( "obstacle_neighborhood", 1);
