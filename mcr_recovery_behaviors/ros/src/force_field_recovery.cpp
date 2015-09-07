@@ -73,12 +73,12 @@ namespace force_field_recovery
 			pub_twist_ = private_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 			
 			// set up marker publishers
-			pub_neighbourhood_ = private_nh.advertise<visualization_msgs::Marker>( "force_field_obstacle_neighborhood", 1);
+			pub_neighbourhood_ = private_nh.advertise<visualization_msgs::Marker>( "obstacle_neighborhood", 1);
 			pub_ff_marker_ = private_nh.advertise<visualization_msgs::Marker>( "force_field_vector", 1);
 			
 			// set up cloud publishers topic
-			pub_global_frame_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("obstacle_cloud_map", 1);
-			pub_robot_frame_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("obstacle_cloud_base_link", 1);
+			pub_global_frame_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("global_obstacle_cloud", 1);
+			pub_robot_frame_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("robot_obstacle_cloud", 1);
 			
 			// setting initialized flag to true, preventing this code to be executed twice
 			initialized_ = true;
