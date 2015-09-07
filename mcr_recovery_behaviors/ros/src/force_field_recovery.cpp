@@ -409,11 +409,9 @@ namespace force_field_recovery
 			// more than "n" allowed oscillations have been detected on the force field
 			return true;
 		}
-		else
-		{
-			// no more than "n" allowed oscillations were detected in the force field so far
-			return false;
-		}
+		
+		// no more than "n" allowed oscillations were detected in the force field so far
+		return false;
 	}
 	
 	void ForceFieldRecovery::publishVelocities(double x, double y)
