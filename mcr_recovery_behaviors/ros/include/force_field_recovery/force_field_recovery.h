@@ -160,7 +160,7 @@ namespace force_field_recovery
 		* looks for big changes in the force field angle, therefore stopping the recovery if needed
 		* @param force_field the latest force field vector computed from the obstacle cloud taken from the costmap
 		*/
-		bool detectOscillations(Eigen::Vector3f force_field);
+		bool detectOscillations(Eigen::Vector3f &force_field);
 		
 		/** 
 		* @brief This function receives x and y velocity and publishes to cmd_vel topic to move the mobile base

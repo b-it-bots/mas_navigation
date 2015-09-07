@@ -366,7 +366,7 @@ namespace force_field_recovery
 		return false;
 	}
 	
-	bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f force_field)
+	bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f &force_field)
 	{
 		double current_angle = 0.0;
 		double angle_difference = 0.0;
