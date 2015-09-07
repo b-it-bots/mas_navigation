@@ -223,7 +223,7 @@ namespace force_field_recovery
 		return cloud;
 	}
 	
-	sensor_msgs::PointCloud2 ForceFieldRecovery::publishCloud(pcl::PointCloud<pcl::PointXYZ> cloud, ros::Publisher &cloud_pub, std::string frame_id)
+	sensor_msgs::PointCloud2 ForceFieldRecovery::publishCloud(pcl::PointCloud<pcl::PointXYZ> &cloud, ros::Publisher &cloud_pub, std::string frame_id)
 	{
 		ROS_DEBUG("Publishing obstacle cloud");
 		
@@ -263,7 +263,7 @@ namespace force_field_recovery
 		return ros_cloud;
 	}
 	
-	pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::changeCloudReferenceFrame(sensor_msgs::PointCloud2 ros_cloud, std::string target_reference_frame)
+	pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::changeCloudReferenceFrame(sensor_msgs::PointCloud2 &ros_cloud, std::string target_reference_frame)
 	{
 		// declaring the target ros pcl data type
 		sensor_msgs::PointCloud2 target_ros_pointcloud;
@@ -294,7 +294,7 @@ namespace force_field_recovery
 		return cloud_trans;
 	}
 	
-	Eigen::Vector3f ForceFieldRecovery::computeForceField(pcl::PointCloud<pcl::PointXYZ> cloud)
+	Eigen::Vector3f ForceFieldRecovery::computeForceField(pcl::PointCloud<pcl::PointXYZ> &cloud)
 	{
 		Eigen::Vector3f force_vector(0, 0, 0);
 		
@@ -331,7 +331,7 @@ namespace force_field_recovery
 		return force_vector;
 	}
 	
-	bool ForceFieldRecovery::checkStoppingConditions(Eigen::Vector3f force_field, 
+	bool ForceFieldRecovery::checkStoppingConditions(Eigen::Vector3f &force_field, 
 			bool &no_obstacles_in_radius, ros::Time start_time, bool &timeout)
 	{
 		// A. no more obstacles in neighbourhood

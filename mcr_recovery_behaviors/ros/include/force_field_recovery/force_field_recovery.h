@@ -122,7 +122,7 @@ namespace force_field_recovery
 		* @param cloud_pub The ros publisher object to execute the method .publish
 		* @param frame_id The frame id of the pointcloud to be published
 		*/
-		sensor_msgs::PointCloud2 publishCloud(pcl::PointCloud<pcl::PointXYZ> cloud, ros::Publisher &cloud_pub, std::string frame_id);
+		sensor_msgs::PointCloud2 publishCloud(pcl::PointCloud<pcl::PointXYZ> &cloud, ros::Publisher &cloud_pub, std::string frame_id);
 		
 		/**
 		* @brief This function receives a ros cloud (with an associated tf) and tranforms 
@@ -130,14 +130,14 @@ namespace force_field_recovery
 		* @param ros_cloud A ros pointcloud to be transformed
 		* @param target_reference_frame The reference frame in which you want the pointcloud to be converted
 		*/
-		pcl::PointCloud<pcl::PointXYZ> changeCloudReferenceFrame(sensor_msgs::PointCloud2 ros_cloud, std::string target_reference_frame);
+		pcl::PointCloud<pcl::PointXYZ> changeCloudReferenceFrame(sensor_msgs::PointCloud2 &ros_cloud, std::string target_reference_frame);
 		
 		/**
 		* @brief  This function receives a cloud and returns the negative of the resultant
 		* assuming that all points in the cloud are vectors
 		* @param cloud pointcloud of obstacles expresed in the reference frame of the robot
 		*/
-		Eigen::Vector3f computeForceField(pcl::PointCloud<pcl::PointXYZ> cloud);
+		Eigen::Vector3f computeForceField(pcl::PointCloud<pcl::PointXYZ> &cloud);
 		
 		/**
 		* @brief  Checks for conditions to stop the recovery behavior: A, B,C
@@ -150,7 +150,7 @@ namespace force_field_recovery
 		* @param start_time 
 		* @param timeout 
 		*/
-		bool checkStoppingConditions(Eigen::Vector3f force_field, 
+		bool checkStoppingConditions(Eigen::Vector3f &force_field, 
 			bool &no_obstacles_in_radius, ros::Time start_time, bool &timeout);
 		
 		/**
