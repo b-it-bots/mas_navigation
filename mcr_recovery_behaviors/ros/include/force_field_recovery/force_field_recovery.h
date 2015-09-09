@@ -239,7 +239,7 @@ namespace force_field_recovery
 		ros::Publisher pub_obstacle_cloud_;
 		
 		// Publisher for visualizing the neighbourhood, this means the points from the costmap that will be
-		// inlcuded to compute the force field vector
+		// included to compute the force field vector
 		ros::Publisher pub_neighbourhood_;
 		
 		// Publisher for the force field vector as marker for visualization purposes
