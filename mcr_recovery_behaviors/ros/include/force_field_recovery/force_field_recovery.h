@@ -150,8 +150,7 @@ namespace force_field_recovery
 		* @param start_time 
 		* @param timeout 
 		*/
-		bool checkStoppingConditions(Eigen::Vector3f &force_field, 
-			bool &no_obstacles_in_radius, ros::Time start_time, bool &timeout);
+		bool checkStoppingConditions(Eigen::Vector3f &force_field, ros::Time start_time);
 		
 		/**
 		* @brief  Detects oscillations in the force field

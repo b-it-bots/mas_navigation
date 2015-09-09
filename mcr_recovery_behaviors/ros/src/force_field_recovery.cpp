@@ -125,8 +125,8 @@ namespace force_field_recovery
 		//reset number of oscillations_ on each recovery behavior call
 		number_of_oscillations_ = 0;
 		
-		// while certain time (timeout) or no obstacles inside radius do the loop 
-		while(!timeout)
+		// checkStoppingConditions(...) is the function in charge of breaking the loop
+		while(!checkStoppingConditions(force_field, start_time))
 		{
 			// 1. getting a snapshot of the costmap
 			costmap_snapshot = costmap_ros->getCostmap();
@@ -148,25 +148,15 @@ namespace force_field_recovery
 			cmd_vel_y = force_field(1)*velocity_scale_;
 			publishVelocities(cmd_vel_x, cmd_vel_y);
 			
-			// 7. check for stopping conditions
-			if(checkStoppingConditions(force_field, no_obstacles_in_radius, start_time, timeout)) 
-				break;
-			
-			// 8. publish markers (neighbourhood and force field vector) for visualization purposes
+			// 7. publish markers (neighbourhood and force field vector) for visualization purposes
 			publishObstacleNeighborhood();
 			publishForceField(force_field);
 			
-			// 9. control the frequency update for costmap update
+			// 8. control the frequency update for costmap update
 			loop_rate.sleep();
 		}
 		
-		// 10. inform move_base about the completition of the recovery behavior
-		if(no_obstacles_in_radius)
-		{
-			ROS_INFO("Force field recovery succesfull");
-		}
-		
-		// 11. stop the base
+		// 9. stop the base
 		publishVelocities(0.0, 0.0);
 	}
 	
@@ -320,18 +310,18 @@ namespace force_field_recovery
 	}
 	
 	bool ForceFieldRecovery::checkStoppingConditions(Eigen::Vector3f &force_field, 
-			bool &no_obstacles_in_radius, ros::Time start_time, bool &timeout)
+		ros::Time start_time)
 	{
 		// A. no more obstacles in neighbourhood
 		if(force_field(0) == 0 && force_field(1) == 0)
 		{
 			// force field = 0, 0 : means we are done and away from costmap obstacles
 			
-			no_obstacles_in_radius = true;
-			
 			ROS_INFO("No more obstacles in radius");
+			ROS_INFO("Force field recovery succesfull");
 			
-			return no_obstacles_in_radius;
+			// stop the recovery behavior
+			return true;
 		}
 		// B. recovery behavior oscillation detection
 		else if(detectOscillations(force_field))
@@ -339,7 +329,9 @@ namespace force_field_recovery
 			// this means the robot is stucked in a small area, causing the force field
 			// to go back and forward -> oscillating, therefore we need to stop the recovery
 			
-			ROS_INFO("Oscillation detected! , will stop now...");
+			ROS_WARN("Oscillation detected! , will stop now...");
+			
+			// stop the recovery behavior
 			return true;
 		}
 		// C. recovery behavior timeout
@@ -347,9 +339,9 @@ namespace force_field_recovery
 		{
 			//timeout, recovery behavior has been executed for timeout seconds and still no success, then abort
 			ROS_WARN("Force field recovery behavior time out exceeded");
-			timeout = true;
 			
-			return timeout;
+			// stop the recovery behavior
+			return true;
 		}
 		
 		// continue the execution of the recovery behavior
