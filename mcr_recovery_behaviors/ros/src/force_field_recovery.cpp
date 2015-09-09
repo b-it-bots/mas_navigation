@@ -7,18 +7,10 @@ using costmap_2d::NO_INFORMATION;
 
 namespace force_field_recovery 
 {
-	ForceFieldRecovery::ForceFieldRecovery()
-	{
-		// setting initial value for member variables
-		global_costmap_ = NULL;
-		local_costmap_ = NULL;
-		tf_ = NULL;
-		initialized_ = NULL;
-		is_oscillation_detection_initialized_ = false;
-		previous_angle_ = 0.0;
-		allowed_oscillations_ = 0;
-		number_of_oscillations_ = 0;
-	}
+	ForceFieldRecovery::ForceFieldRecovery(): global_costmap_(NULL), local_costmap_(NULL), 
+	tf_(NULL), initialized_(NULL), is_oscillation_detection_initialized_(false), 
+	previous_angle_(0.0), allowed_oscillations_(0), number_of_oscillations_(0)
+	{}
 
 	void ForceFieldRecovery::initialize(std::string name, tf::TransformListener* tf,
 		costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap)
