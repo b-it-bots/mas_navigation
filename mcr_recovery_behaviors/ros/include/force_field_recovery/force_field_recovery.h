@@ -235,11 +235,8 @@ namespace force_field_recovery
 		// A twist publisher for cmd_vel used to publish a velocity to the mobile base
 		ros::Publisher pub_twist_;
 		
-		// A pointcloud publisher that will publish the obstacle cloud in map reference frame
-		ros::Publisher pub_global_frame_cloud_;
-		
-		// A pointcloud publisher that will publish the obstacle cloud in robot base reference frame
-		ros::Publisher pub_robot_frame_cloud_;
+		// A pointcloud publisher that will publish the obstacle cloud for visualization purposes
+		ros::Publisher pub_obstacle_cloud_;
 		
 		// Publisher for visualizing the neighbourhood, this means the points from the costmap that will be
 		// inlcuded to compute the force field vector

@@ -77,8 +77,7 @@ namespace force_field_recovery
 			pub_ff_marker_ = private_nh.advertise<visualization_msgs::Marker>( "force_field_vector", 1);
 			
 			// set up cloud publishers topic
-			pub_global_frame_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("global_obstacle_cloud", 1);
-			pub_robot_frame_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("robot_obstacle_cloud", 1);
+			pub_obstacle_cloud_ = private_nh.advertise<sensor_msgs::PointCloud2> ("obstacle_cloud", 1);
 			
 			// setting initialized flag to true, preventing this code to be executed twice
 			initialized_ = true;
@@ -123,7 +122,7 @@ namespace force_field_recovery
 		costmap_2d::Costmap2D* costmap_snapshot;
 		pcl::PointCloud<pcl::PointXYZ> obstacle_cloud;
 		sensor_msgs::PointCloud2 global_frame_obstacle_cloud;
-		pcl::PointCloud<pcl::PointXYZ> robot_frame_oc;
+		pcl::PointCloud<pcl::PointXYZ> robot_frame_obstacle_cloud;
 		Eigen::Vector3f force_field;
 		
 		ros::Rate loop_rate(recovery_behavior_update_frequency_);
@@ -144,41 +143,38 @@ namespace force_field_recovery
 			obstacle_cloud = costmapToPointcloud(costmap_snapshot);
 			
 			// 3. publish global frame obstacle cloud
-			global_frame_obstacle_cloud = publishCloud(obstacle_cloud, pub_global_frame_cloud_, robot_global_frame_);
+			global_frame_obstacle_cloud = publishCloud(obstacle_cloud, pub_obstacle_cloud_, robot_global_frame_);
 			
-			// 4. Change cloud to the reference frame of the robot (robot_frame_oc = robot frame obstacle cloud)
-			robot_frame_oc = changeCloudReferenceFrame(global_frame_obstacle_cloud, robot_base_frame_);
+			// 4. change cloud to the reference frame of the robot
+			robot_frame_obstacle_cloud = changeCloudReferenceFrame(global_frame_obstacle_cloud, robot_base_frame_);
 			
-			// 5. publish robot frame obstacle cloud
-			publishCloud(robot_frame_oc, pub_robot_frame_cloud_, robot_base_frame_);
+			// 5. compute force field
+			force_field = computeForceField(robot_frame_obstacle_cloud);
 			
-			// 6. compute force field
-			force_field = computeForceField(robot_frame_oc);
-			
-			// 7. move base in the direction of the force field
+			// 6. move base in the direction of the force field
 			cmd_vel_x = force_field(0)*velocity_scale_;
 			cmd_vel_y = force_field(1)*velocity_scale_;
 			publishVelocities(cmd_vel_x, cmd_vel_y);
 			
-			// 8. Check for stopping conditions
+			// 7. check for stopping conditions
 			if(checkStoppingConditions(force_field, no_obstacles_in_radius, start_time, timeout)) 
 				break;
 			
-			//9. publish markers (neighbourhood and force field vector) for visualization purposes
+			// 8. publish markers (neighbourhood and force field vector) for visualization purposes
 			publishObstacleNeighborhood();
 			publishForceField(force_field);
 			
-			//10. Control the frequency update for costmap update
+			// 9. control the frequency update for costmap update
 			loop_rate.sleep();
 		}
 		
-		// 11. Inform move_base about the completition of the recovery behavior
+		// 10. inform move_base about the completition of the recovery behavior
 		if(no_obstacles_in_radius)
 		{
 			ROS_INFO("Force field recovery succesfull");
 		}
 		
-		// 12. stop the base
+		// 11. stop the base
 		publishVelocities(0.0, 0.0);
 	}
 	
