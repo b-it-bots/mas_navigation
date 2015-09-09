@@ -16,6 +16,8 @@ find_package(PCL 1.7 REQUIRED)
 
 catkin_package(
   CATKIN_DEPENDS
+    geometry_msgs
+    std_msgs
 )
 
 include_directories(
