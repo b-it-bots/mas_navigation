@@ -8,7 +8,7 @@
 #include <mcr_collision_velocity_filter/collision_velocity_filter_node.h>
 
 CollisionVelocityFilterNode::CollisionVelocityFilterNode() :
-        footprint_msg_received(false), laser_scans_as_pcl_cloud_received(false), desired_twist_msg_received_(false), debug_mode_(false)
+    footprint_msg_received(false), laser_scans_as_pcl_cloud_received(false), desired_twist_msg_received_(false), debug_mode_(false)
 {
     std::string footprint_parameter_name = "footprint";
     std::string footprint_topic_name = "footprint";
@@ -61,11 +61,13 @@ CollisionVelocityFilterNode::CollisionVelocityFilterNode() :
     {
         ROS_ERROR("No scan topics specified. Exiting ...");
         exit(0);
-    } else if (scan_topics.size() == 1)
+    }
+    else if (scan_topics.size() == 1)
     {
         ROS_INFO_STREAM("Subscribing to one scan topic: " << scan_topics[0]);
         sub_single_scan_ = nh.subscribe < sensor_msgs::LaserScan > (scan_topics[0], 10, &CollisionVelocityFilterNode::oneLaserScanCallback, this);
-    } else
+    }
+    else
     {
         ROS_INFO("Subscribing to multiple scan topics: ");
         for (size_t i = 0; i < scan_topics.size(); ++i)
@@ -79,7 +81,8 @@ CollisionVelocityFilterNode::CollisionVelocityFilterNode() :
             two_synced_laser_scans_ = boost::make_shared<Synchronizer<ApproximateTime<sensor_msgs::LaserScan, sensor_msgs::LaserScan> > >(3);
             two_synced_laser_scans_->connectInput(sub_scan_1, sub_scan_2);
             two_synced_laser_scans_->registerCallback(boost::bind(&CollisionVelocityFilterNode::twoSynchronizedLaserscanCallback, this, _1, _2));
-        } else if (scan_topics.size() == 3)
+        }
+        else if (scan_topics.size() == 3)
         {
             sub_scan_1.subscribe(nh, scan_topics[0], 10);
             sub_scan_2.subscribe(nh, scan_topics[1], 10);
@@ -88,7 +91,8 @@ CollisionVelocityFilterNode::CollisionVelocityFilterNode() :
             three_synced_laser_scans_ = boost::make_shared<Synchronizer<ApproximateTime<sensor_msgs::LaserScan, sensor_msgs::LaserScan, sensor_msgs::LaserScan> > >(3);
             three_synced_laser_scans_->connectInput(sub_scan_1, sub_scan_2, sub_scan_3);
             three_synced_laser_scans_->registerCallback(boost::bind(&CollisionVelocityFilterNode::threeSynchronizedLaserscanCallback, this, _1, _2, _3));
-        } else
+        }
+        else
         {
             ROS_ERROR_STREAM("The number of subscribed scan topics is not supported");
             exit(0);
@@ -239,7 +243,8 @@ sensor_msgs::PointCloud2 CollisionVelocityFilterNode::getCloudFromLaserScan(cons
         transform_listener_.waitForTransform(scan.header.frame_id, target_frame_, scan.header.stamp, ros::Duration(0.1));
         laser_projector_.transformLaserScanToPointCloud(target_frame_, scan, cloud, transform_listener_);
 
-    } catch (std::exception &e)
+    }
+    catch (std::exception &e)
     {
         ROS_ERROR_STREAM("Could not transform laser scan into target frame: " << e.what());
     }
@@ -283,7 +288,8 @@ void CollisionVelocityFilterNode::update()
         {
             event_out_.data = "e_zero_velocities_forwarded";
             pub_event_.publish(event_out_);
-        } else if (sum_desired != sum_safe)
+        }
+        else if (sum_desired != sum_safe)
         {
             event_out_.data = "e_reduced_velocities_forwarded";
             pub_event_.publish(event_out_);

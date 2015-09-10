@@ -8,8 +8,8 @@
 #include <mcr_collision_velocity_filter/collision_velocity_filter.h>
 
 CollisionVelocityFilter::CollisionVelocityFilter() :
-        soft_padding_front_rear_(0.15), hard_padding_front_rear_(0.02), soft_padding_left_right_(0.15), hard_padding_left_right_(0.06), linear_velocity_in_soft_padding_(0.02), angular_velocity_in_soft_padding_(
-                0.1)
+    soft_padding_front_rear_(0.15), hard_padding_front_rear_(0.02), soft_padding_left_right_(0.15), hard_padding_left_right_(0.06), linear_velocity_in_soft_padding_(0.02), angular_velocity_in_soft_padding_(
+        0.1)
 {
     zero_twist_velocity_.linear.x = zero_twist_velocity_.linear.y = zero_twist_velocity_.linear.z = 0.0;
     zero_twist_velocity_.angular.x = zero_twist_velocity_.angular.y = zero_twist_velocity_.angular.z = 0.0;
