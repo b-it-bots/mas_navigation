@@ -10,6 +10,7 @@ find_package(catkin REQUIRED
    geometry_msgs
    pcl_ros
    tf
+   roslint
 )
 
 find_package(cmake_modules REQUIRED)
@@ -37,8 +38,14 @@ catkin_package(
     tf
 )
 
+### LIBRARIES
 add_library(force_field_recovery ros/src/force_field_recovery.cpp)
 target_link_libraries(force_field_recovery ${catkin_LIBRARIES})
+
+
+### TESTS
+roslint_cpp()
+
 
 ### INSTALLS
 install(TARGETS force_field_recovery
