@@ -13,7 +13,6 @@ find_package(catkin REQUIRED
    tf
 )
 
-find_package(cmake_modules REQUIRED)
 find_package(Eigen REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 
