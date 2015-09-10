@@ -400,7 +400,7 @@ namespace force_field_recovery
 	{
 		if(x != 0 && y != 0) //Do not print if x and y are zero
 		{
-			ROS_INFO("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
+			ROS_DEBUG("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
 		}
 		
 		geometry_msgs::Twist twist_msg;
