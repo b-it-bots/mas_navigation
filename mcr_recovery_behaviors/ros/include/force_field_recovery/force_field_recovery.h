@@ -25,6 +25,8 @@
 #include <tf/transform_listener.h>
 #include <pluginlib/class_list_macros.h>
 #include <vector>
+#include <string>
+#include <std_msgs/String.h>
 
 // For transforming costmap occupied cells into pointcloud
 #include <pcl/point_types.h>
@@ -32,6 +34,9 @@
 
 // For moving the mobile base (publish in cmd_vel)
 #include <geometry_msgs/Twist.h>
+
+// For publishing neighbourhood and force field vector as marker
+#include <visualization_msgs/Marker.h>
 
 // Ros PCL includes
 #include <pcl/PCLPointCloud2.h>
@@ -44,6 +49,8 @@
 #include <pcl_ros/transforms.h>
 
 #define LETHAL_COST 254
+
+using namespace std;
 
 namespace force_field_recovery
 {
@@ -81,13 +88,13 @@ namespace force_field_recovery
 
 		private:
 			
-		/**
-		* @brief  This function moves the mobile base away from obstacles based on a costmap
+		/** 
+		* @brief  This function receives x and y velocity and publishes to cmd_vel topic to move the mobile base
 		*
 		* step 1. Get the current costmap
 		* step 2. Convert all obstacles (cost = 254) inside local costmap into pointcloud
 		* step 3. Publish the previous obtained obstacle pointcloud for debugging purposes
-		* step 4. Change cloud to the reference frame of the robot (base footprint) since 
+		* step 4. Change cloud to the reference frame of the robot since 
 		*         it was in map frame and needs to be in the reference frame of the robot
 		* step 5. Publish base link obstacle cloud for debugging purposes, the cloud must match
 		*         with the previous obstacle pointcloud
@@ -99,44 +106,78 @@ namespace force_field_recovery
 		*
 		* @param costmap A pointer to the local_costmap used by the navigation stack 
 		*/
-		void move_base_away(costmap_2d::Costmap2DROS* costmap);
+		void moveBaseAwayFromObstacles(costmap_2d::Costmap2DROS* costmap);
 		
 		/**
-		* @brief  Iterates over the costmap and when it finds a cost = 254 (obstacle or lethal cost)
-		* it appends this point to a pointcloud called obstacle cloud
+		* @brief  This function transforms occupied regions of a costmap, letal cost = 254 to 
+		* pointcloud xyz coordinate
 		* 
 		* @param costmap A pointer to the local_costmap used by the navigation stack 
 		*/
-		pcl::PointCloud<pcl::PointXYZ> costmap_to_pointcloud(const costmap_2d::Costmap2D* costmap);
+		pcl::PointCloud<pcl::PointXYZ> costmapToPointcloud(const costmap_2d::Costmap2D* costmap);
 		
 		/**
-		* @brief  Receives a cloud transforms to ros pcl format and publishes the cloud for debugging purposes
+		* @brief This function receives a pcl pointcloud, transforms into ros pointcloud and then publishes the cloud
 		* @param cloud A pcl pointcloud to be published
 		* @param cloud_pub The ros publisher object to execute the method .publish
 		* @param frame_id The frame id of the pointcloud to be published
 		*/
-		sensor_msgs::PointCloud2 publish_cloud(pcl::PointCloud<pcl::PointXYZ> cloud, ros::Publisher &cloud_pub, std::string frame_id);
+		sensor_msgs::PointCloud2 publishCloud(pcl::PointCloud<pcl::PointXYZ> &cloud, ros::Publisher &cloud_pub, std::string frame_id);
 		
 		/**
-		* @brief  Transform all points inside the pointcloud to a different target reference frame
+		* @brief This function receives a ros cloud (with an associated tf) and tranforms 
+		* all the points to another reference frame (target_reference_frame)
 		* @param ros_cloud A ros pointcloud to be transformed
 		* @param target_reference_frame The reference frame in which you want the pointcloud to be converted
 		*/
-		pcl::PointCloud<pcl::PointXYZ> change_cloud_reference_frame(sensor_msgs::PointCloud2 ros_cloud, std::string target_reference_frame);
+		pcl::PointCloud<pcl::PointXYZ> changeCloudReferenceFrame(sensor_msgs::PointCloud2 &ros_cloud, std::string target_reference_frame);
 		
 		/**
-		* @brief  Inputs a pointcloud and returns the negative of the resultant of the cloud
-		* assuming that the points inside the cloud are vectors
+		* @brief  This function receives a cloud and returns the negative of the resultant
+		* assuming that all points in the cloud are vectors
 		* @param cloud pointcloud of obstacles expresed in the reference frame of the robot
 		*/
-		Eigen::Vector3f compute_force_field(pcl::PointCloud<pcl::PointXYZ> cloud);
+		Eigen::Vector3f computeForceField(pcl::PointCloud<pcl::PointXYZ> &cloud);
 		
 		/**
-		* @brief  Move the base by publishing on cmd_vel a certain Vx and Vy
+		* @brief  Checks for conditions to stop the recovery behavior: A, B,C
+		* A: When there are no more obstacles in the neighbourhood of the robot
+		* B: When oscillations in the force field are detected
+		* C: When the recovery is taking too much time to execute (timeout)
+		* @param force_field the force field vector, computed based on obstacles comming formt the costmap
+		* @param no_obstacles_in_radius this is information that this function returns to the user as pointer
+		* @param number_of_oscillations 
+		* @param start_time 
+		* @param timeout 
+		*/
+		bool checkStoppingConditions(Eigen::Vector3f &force_field, ros::Time start_time);
+		
+		/**
+		* @brief  Detects oscillations in the force field
+		* Sometimes the robot gets stucked and has obstacles all around, this will result in an oscillating
+		* behavior, this means the robot will go back and forward until the timeout has passed, this function
+		* looks for big changes in the force field angle, therefore stopping the recovery if needed
+		* @param force_field the latest force field vector computed from the obstacle cloud taken from the costmap
+		*/
+		bool detectOscillations(Eigen::Vector3f &force_field);
+		
+		/** 
+		* @brief This function receives x and y velocity and publishes to cmd_vel topic to move the mobile base
 		* @param x The x velocity to be send to the mobile base
 		* @param y The y velocity to be send to the mobile base
 		*/
-		void move_base(double x, double y);
+		void publishVelocities(double x, double y);
+		
+		/**
+		* @brief This function is for visualization of the neighbourhood area in rviz
+		*/
+		void publishObstacleNeighborhood();
+		
+		/** 
+		* @brief This function is for visualization of the force_field vector in rviz
+		* @param force_field the force field vector, computed based on obstacles comming from the costmap
+		*/
+		void publishForceField(Eigen::Vector3f force_field);
 		
 		/*
 		 * private member variables
@@ -144,7 +185,11 @@ namespace force_field_recovery
 		 */
 		
 		// Flag used for preventing the class to initialize more than one time
-		bool initialized_; 
+		bool initialized_;
+		
+		// For avoiding to check oscillations in the first iteration, since there is no previous force
+		// to compare with
+		bool is_oscillation_detection_initialized_;
 		
 		// A pointer to the transform listener sent by move_base
 		tf::TransformListener* tf_; 
@@ -167,14 +212,37 @@ namespace force_field_recovery
 		// The frequency update for the local costmap
 		double recovery_behavior_update_frequency_;
 		
+		// A backup of the previous force field angle, used to detect oscillations in the force
+		double previous_angle_;
+		
+		// Used for detecting oscillations in the force field by comparing the previous and current angle of
+		// the force field +/- some angular tolerance
+		double oscillation_angular_tolerance_;
+		
+		// The maximum number of allowed oscillations in the recovery behavior
+		int allowed_oscillations_;
+		
+		// Variable used to count how many oscillations the robot has made so far
+		int number_of_oscillations_;
+		
+		// For storing the recovery behavior robot reference frame
+		std::string robot_base_frame_;
+		
+		// For storing the recovery behavior global reference frame (costmap reference frame)
+		std::string robot_global_frame_;
+		
 		// A twist publisher for cmd_vel used to publish a velocity to the mobile base
-		ros::Publisher twist_pub_;
+		ros::Publisher pub_twist_;
 		
-		// A pointcloud publisher that will publish the obstacle cloud in map reference frame
-		ros::Publisher map_cloud_pub_;
+		// A pointcloud publisher that will publish the obstacle cloud for visualization purposes
+		ros::Publisher pub_obstacle_cloud_;
 		
-		// A pointcloud publisher that will publish the obstacle cloud in base_footprint reference frame
-		ros::Publisher base_footprint_cloud_pub_;
+		// Publisher for visualizing the neighbourhood, this means the points from the costmap that will be
+		// included to compute the force field vector
+		ros::Publisher pub_neighbourhood_;
+		
+		// Publisher for the force field vector as marker for visualization purposes
+		ros::Publisher pub_ff_marker_;
 	};
 };
 
