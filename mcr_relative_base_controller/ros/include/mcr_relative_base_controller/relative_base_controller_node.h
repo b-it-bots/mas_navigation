@@ -32,7 +32,7 @@
 class BaseMotionController
 {
 
-   public:
+public:
 
     /**
      * Constructor - initializes publishers, subscribers and flags
@@ -76,7 +76,7 @@ class BaseMotionController
      */
     void run();
 
-  private:
+private:
 
     /**
      * performs relative translation
@@ -149,7 +149,7 @@ class BaseMotionController
 
     ros::Publisher move_done_pub_; /// publisher for event_out
 
-    ros::NodeHandle nh_; /// node handle 
+    ros::NodeHandle nh_; /// node handle
 
     tf::TransformListener *tf_listener_;
 
