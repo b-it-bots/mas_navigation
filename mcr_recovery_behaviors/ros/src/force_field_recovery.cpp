@@ -1,7 +1,14 @@
+/*
+ * Copyright [2015] <Bonn-Rhein-Sieg University>
+ *
+ */
+
 #include <force_field_recovery/force_field_recovery.h>
+#include <string>
 
 // Register this planner as a RecoveryBehavior plugin
-PLUGINLIB_DECLARE_CLASS(force_field_recovery, ForceFieldRecovery, force_field_recovery::ForceFieldRecovery, nav_core::RecoveryBehavior)
+PLUGINLIB_DECLARE_CLASS(force_field_recovery, ForceFieldRecovery, force_field_recovery::ForceFieldRecovery,
+                        nav_core::RecoveryBehavior)
 
 using costmap_2d::NO_INFORMATION;
 
@@ -42,24 +49,15 @@ void ForceFieldRecovery::initialize(std::string name, tf::TransformListener* tf,
 
         // Inform user about which parameters will be used for the recovery behavior
         ROS_INFO("Force field recovery behavior parameters : ");
-        ROS_INFO("Velocity_scale parameter : %f"
-                 , (float) velocity_scale_);
-        ROS_INFO("Obstacle_neighborhood parameter : %f"
-                 , (float) obstacle_neighborhood_);
-        ROS_INFO("Max_velocity parameter : %f"
-                 , (float) max_velocity_);
-        ROS_INFO("Timeout parameter : %f"
-                 , (float) timeout_);
-        ROS_INFO("Recovery_behavior_update_frequency_ parameter : %f"
-                 , (float) recovery_behavior_update_frequency_);
-        ROS_INFO("Oscillation_angular_tolerance parameter : %f"
-                 , (float) oscillation_angular_tolerance_);
-        ROS_INFO("Allowed_oscillations parameter : %f"
-                 , (float) allowed_oscillations_);
-        ROS_INFO("Robot base reference frame : %s"
-                 , robot_base_frame_.c_str());
-        ROS_INFO("Robot global reference frame : %s"
-                 , robot_global_frame_.c_str());
+        ROS_INFO("Velocity_scale parameter : %lf", velocity_scale_);
+        ROS_INFO("Obstacle_neighborhood parameter : %lf", obstacle_neighborhood_);
+        ROS_INFO("Max_velocity parameter : %lf", max_velocity_);
+        ROS_INFO("Timeout parameter : %lf", timeout_);
+        ROS_INFO("Recovery_behavior_update_frequency_ parameter : %lf", recovery_behavior_update_frequency_);
+        ROS_INFO("Oscillation_angular_tolerance parameter : %lf", oscillation_angular_tolerance_);
+        ROS_INFO("Allowed_oscillations parameter : %d", allowed_oscillations_);
+        ROS_INFO("Robot base reference frame : %s", robot_base_frame_.c_str());
+        ROS_INFO("Robot global reference frame : %s", robot_global_frame_.c_str());
 
         // set up cmd_vel publisher
         pub_twist_ = private_nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
@@ -119,10 +117,10 @@ void ForceFieldRecovery::moveBaseAwayFromObstacles(costmap_2d::Costmap2DROS* cos
 
     ros::Rate loop_rate(recovery_behavior_update_frequency_);
 
-    //reset allowed_oscillations_ on each recovery behavior call
+    // reset allowed_oscillations_ on each recovery behavior call
     allowed_oscillations_ = 0;
 
-    //reset number of oscillations_ on each recovery behavior call
+    // reset number of oscillations_ on each recovery behavior call
     number_of_oscillations_ = 0;
 
     // checkStoppingConditions(...) is the function in charge of breaking the loop
@@ -190,7 +188,7 @@ pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmapToPointcloud(const cos
                 // get world coordinates of current occupied cell
                 costmap->mapToWorld(i, j, world_x, world_y);
 
-                ROS_DEBUG("point %d, %d = %f, %f ", i , j , (float) world_x, (float) world_y);
+                ROS_DEBUG("point %d, %d = %lf, %lf ", i , j , world_x, world_y);
 
                 // adding occupied cell centroid coordinates to cloud
                 cloud.push_back(pcl::PointXYZ(world_x, world_y, 0));
@@ -201,7 +199,8 @@ pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmapToPointcloud(const cos
     return cloud;
 }
 
-sensor_msgs::PointCloud2 ForceFieldRecovery::publishCloud(pcl::PointCloud<pcl::PointXYZ> &cloud, ros::Publisher &cloud_pub, std::string frame_id)
+sensor_msgs::PointCloud2 ForceFieldRecovery::publishCloud(pcl::PointCloud<pcl::PointXYZ> &cloud,
+                                                          ros::Publisher &cloud_pub, std::string frame_id)
 {
     ROS_DEBUG("Publishing obstacle cloud");
 
@@ -212,7 +211,7 @@ sensor_msgs::PointCloud2 ForceFieldRecovery::publishCloud(pcl::PointCloud<pcl::P
 
     while (cloud_iterator != cloud.end())
     {
-        ROS_DEBUG("cloud [%d] = %f, %f, %f ", numPoints, (float)cloud_iterator->x, (float)cloud_iterator->y, (float)cloud_iterator->z);
+        ROS_DEBUG("cloud [%d] = %lf, %lf, %lf ", numPoints, cloud_iterator->x, cloud_iterator->y, cloud_iterator->z);
         ++cloud_iterator;
         numPoints++;
     }
@@ -241,7 +240,8 @@ sensor_msgs::PointCloud2 ForceFieldRecovery::publishCloud(pcl::PointCloud<pcl::P
     return ros_cloud;
 }
 
-pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::changeCloudReferenceFrame(sensor_msgs::PointCloud2 &ros_cloud, std::string target_reference_frame)
+pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::changeCloudReferenceFrame(sensor_msgs::PointCloud2 &ros_cloud,
+        std::string target_reference_frame)
 {
     // declaring the target ros pcl data type
     sensor_msgs::PointCloud2 target_ros_pointcloud;
@@ -304,7 +304,7 @@ Eigen::Vector3f ForceFieldRecovery::computeForceField(pcl::PointCloud<pcl::Point
     force_vector.normalize();
     force_vector = force_vector * 1.0;
 
-    ROS_DEBUG("Force vector = (%f, %f)", (float) force_vector(0), (float) force_vector(1));
+    ROS_DEBUG("Force vector = (%lf, %lf)", force_vector(0), force_vector(1));
 
     return force_vector;
 }
@@ -337,7 +337,7 @@ bool ForceFieldRecovery::checkStoppingConditions(Eigen::Vector3f &force_field,
     // C. recovery behavior timeout
     else if (ros::Duration(ros::Time::now() - start_time).toSec() > timeout_)
     {
-        //timeout, recovery behavior has been executed for timeout seconds and still no success, then abort
+        // timeout, recovery behavior has been executed for timeout seconds and still no success, then abort
         ROS_WARN("Force field recovery behavior time out exceeded");
 
         // stop the recovery behavior
@@ -359,13 +359,13 @@ bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f &force_field)
         // get the new force field angle
         current_angle = atan2(force_field(1) , force_field(0));
 
-        ROS_DEBUG("previous angle : %f", (float) previous_angle_);
-        ROS_DEBUG("current angle : %f", (float) current_angle);
+        ROS_DEBUG("previous angle : %lf", previous_angle_);
+        ROS_DEBUG("current angle : %lf", current_angle);
 
         // compare the angles
         angle_difference = atan2(sin(current_angle - previous_angle_), cos(current_angle - previous_angle_));
 
-        ROS_DEBUG("angle_difference = %f", (float) angle_difference);
+        ROS_DEBUG("angle_difference = %lf", angle_difference);
 
         // detect if the force field angle has an abrupt angular change
         if (fabs(angle_difference) > oscillation_angular_tolerance_)
@@ -398,9 +398,9 @@ bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f &force_field)
 
 void ForceFieldRecovery::publishVelocities(double x, double y)
 {
-    if (x != 0 && y != 0) //Do not print if x and y are zero
+    if (x != 0 && y != 0)  // Do not print if x and y are zero
     {
-        ROS_DEBUG("Moving base into the direction of the force field x = %f, y = %f", (float) x, (float) y);
+        ROS_DEBUG("Moving base into the direction of the force field x = %lf, y = %lf", x, y);
     }
 
     geometry_msgs::Twist twist_msg;
@@ -424,7 +424,7 @@ void ForceFieldRecovery::publishVelocities(double x, double y)
 
 void ForceFieldRecovery::publishForceField(Eigen::Vector3f force_field)
 {
-    //variable declaration
+    // variable declaration
     double force_field_angle = 0.0;
     visualization_msgs::Marker ff_marker;
 
@@ -438,13 +438,13 @@ void ForceFieldRecovery::publishForceField(Eigen::Vector3f force_field)
 
     // origin of the marker is 0, 0, 0 by default, therefore not setting it
 
-    //computing force field yaw angle
+    // computing force field yaw angle
     force_field_angle = atan2(force_field(1), force_field(0));
 
     // transforming force field angle from radians to quaternion by setting yaw value
     tf::Quaternion q = tf::createQuaternionFromRPY(0.0, 0.0, force_field_angle);
 
-    //assign orientation of the quaternion to the marker
+    // assign orientation of the quaternion to the marker
     ff_marker.pose.orientation.x = q.x();
     ff_marker.pose.orientation.y = q.y();
     ff_marker.pose.orientation.z = q.z();
@@ -457,10 +457,10 @@ void ForceFieldRecovery::publishForceField(Eigen::Vector3f force_field)
     ff_marker.scale.y = 0.1;
     ff_marker.scale.z = 0.1;
 
-    //alpha (transparency level)
+    // alpha (transparency level)
     ff_marker.color.a = 0.9;
 
-    //rgb for orange/yellow
+    // rgb for orange/yellow
     ff_marker.color.r = 255.0;
     ff_marker.color.g = 153.0;
     ff_marker.color.b = 0.0;
@@ -491,7 +491,7 @@ void ForceFieldRecovery::publishObstacleNeighborhood()
     neighbourhood_marker.scale.y = obstacle_neighborhood_ * 2.0;
     neighbourhood_marker.scale.z = 0.1;
 
-    neighbourhood_marker.color.a = 0.5; //alpha (transparency level)
+    neighbourhood_marker.color.a = 0.5;  // alpha (transparency level)
     neighbourhood_marker.color.r = 0.0;
     neighbourhood_marker.color.g = 1.0;
     neighbourhood_marker.color.b = 0.0;
@@ -499,4 +499,4 @@ void ForceFieldRecovery::publishObstacleNeighborhood()
     // publish the neighbourhood as cylinder marker
     pub_neighbourhood_.publish(neighbourhood_marker);
 }
-};
+};  // namespace force_field_recovery
