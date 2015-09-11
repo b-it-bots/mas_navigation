@@ -1,5 +1,7 @@
 /* Force field recovery behavior
  *
+ * Copyright [2015] <Bonn-Rhein-Sieg University>
+ *
  * Original idea from : https://github.com/daenny
  *
  * Main code idea mostly taken from :
@@ -14,8 +16,8 @@
  *
  */
 
-#ifndef FORCE_FIELD_RECOVERY_H_
-#define FORCE_FIELD_RECOVERY_H_
+#ifndef FORCE_FIELD_RECOVERY_FORCE_FIELD_RECOVERY_H
+#define FORCE_FIELD_RECOVERY_FORCE_FIELD_RECOVERY_H
 
 #include <ros/ros.h>
 #include <nav_core/recovery_behavior.h>
@@ -42,15 +44,13 @@
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 
-//For publishing local costmap tf
+// For publishing local costmap tf
 #include <tf/transform_broadcaster.h>
 
-//For pointcloud reference frame transformer
+// For pointcloud reference frame transformer
 #include <pcl_ros/transforms.h>
 
 #define LETHAL_COST 254
-
-using namespace std;
 
 namespace force_field_recovery
 {
@@ -87,7 +87,6 @@ public:
     void runBehavior();
 
 private:
-
     /**
     * @brief  This function receives x and y velocity and publishes to cmd_vel topic to move the mobile base
     *
@@ -122,7 +121,8 @@ private:
     * @param cloud_pub The ros publisher object to execute the method .publish
     * @param frame_id The frame id of the pointcloud to be published
     */
-    sensor_msgs::PointCloud2 publishCloud(pcl::PointCloud<pcl::PointXYZ> &cloud, ros::Publisher &cloud_pub, std::string frame_id);
+    sensor_msgs::PointCloud2 publishCloud(pcl::PointCloud<pcl::PointXYZ> &cloud, ros::Publisher &cloud_pub,
+                                          std::string frame_id);
 
     /**
     * @brief This function receives a ros cloud (with an associated tf) and tranforms
@@ -130,7 +130,8 @@ private:
     * @param ros_cloud A ros pointcloud to be transformed
     * @param target_reference_frame The reference frame in which you want the pointcloud to be converted
     */
-    pcl::PointCloud<pcl::PointXYZ> changeCloudReferenceFrame(sensor_msgs::PointCloud2 &ros_cloud, std::string target_reference_frame);
+    pcl::PointCloud<pcl::PointXYZ> changeCloudReferenceFrame(sensor_msgs::PointCloud2 &ros_cloud,
+                                                             std::string target_reference_frame);
 
     /**
     * @brief  This function receives a cloud and returns the negative of the resultant
@@ -244,6 +245,6 @@ private:
     // Publisher for the force field vector as marker for visualization purposes
     ros::Publisher pub_ff_marker_;
 };
-};
+};  // namespace force_field_recovery
 
-#endif
+#endif  // FORCE_FIELD_RECOVERY_FORCE_FIELD_RECOVERY_H
