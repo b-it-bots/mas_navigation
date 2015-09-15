@@ -7,6 +7,7 @@ find_package(catkin REQUIRED
     geometry_msgs
     nav_msgs
     roscpp
+    roslint
     std_msgs
     tf  
 )
