@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- Note: this is a launch file to tune this component for different tasks. -->
 <launch>
-    <group ns="direct_base_controller">
+    <group ns="mcr_navigation/direct_base_controller">
             
         <node pkg="mcr_common_converters" type="transform_to_pose_converter_node" name="pose_converter" output="screen">
         
