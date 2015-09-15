@@ -28,7 +28,6 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
-  <run_depend>mir_pregrasp_planner</run_depend>
   <run_depend>mcr_geometric_relation_monitors</run_depend>
   <run_depend>mcr_common_converters</run_depend>
   <run_depend>mcr_twist_controller</run_depend>
