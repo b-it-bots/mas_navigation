@@ -18,8 +18,8 @@ parameters for all the components and starts/stops them accordingly.
 
 import rospy
 import std_msgs.msg
-import geometry_msgs
-import mcr_monitoring_msgs
+import geometry_msgs.msg
+import mcr_monitoring_msgs.msg
 
 
 class DirectBaseControllerCoordinator(object):
@@ -60,7 +60,7 @@ class DirectBaseControllerCoordinator(object):
 
         # subscribers
         rospy.Subscriber("~event_in", std_msgs.msg.String, self.event_in_cb)
-        rospy.Subscriber("~pose_monitor_feedback", mcr_monitoring_msgs.msgs.ComponentWisePoseErrorMonitorFeedback, self.pose_monitor_feedback_cb)
+        rospy.Subscriber("~pose_monitor_feedback", mcr_monitoring_msgs.msg.ComponentWisePoseErrorMonitorFeedback, self.pose_monitor_feedback_cb)
 
     def event_in_cb(self, msg):
         """
@@ -74,7 +74,7 @@ class DirectBaseControllerCoordinator(object):
         Obtains the feedback from the pose error monitor component
 
         """
-        self.pose_monitor_feedback = msg.data
+        self.pose_monitor_feedback = msg
 
     def start(self):
         """
@@ -103,6 +103,8 @@ class DirectBaseControllerCoordinator(object):
 
         """
         if self.event == 'e_start':
+            self.send_event_to_components("start")
+            self.event = None
             return 'RUNNING'
         else:
             return 'INIT'
@@ -117,28 +119,31 @@ class DirectBaseControllerCoordinator(object):
         """
 
         if self.event == 'e_stop':
-            self.send_event_to_components("start")
+            self.send_event_to_components("stop")
             self.event_out.publish('e_stopped')
             self.event = None
             self.pose_monitor_feedback = None
             self.started_components = False
             
+            self.publish_zero_velocities()
+            
             return 'INIT'
 
-        elif self.pose_monitor_feedback.is_linear_x_within_tolerance and 
-             self.pose_monitor_feedback.is_linear_y_within_tolerance and 
-             self.pose_monitor_feedback.is_angular_z_within_tolerance:
-            self.send_event_to_components("stop")
-            self.event_out.publish('e_success')
-            self.event = None
-            self.pose_monitor_feedback = None
-            self.started_components = False
-            
-            publish_zero_velocities()
-            
-            return 'INIT'
-        else:
-            return 'RUNNING'
+        if self.pose_monitor_feedback != None:
+            if self.pose_monitor_feedback.is_linear_x_within_tolerance and \
+                 self.pose_monitor_feedback.is_linear_y_within_tolerance and \
+                 self.pose_monitor_feedback.is_angular_z_within_tolerance:
+                self.send_event_to_components("stop")
+                self.event_out.publish('e_success')
+                self.event = None
+                self.pose_monitor_feedback = None
+                self.started_components = False
+
+                self.publish_zero_velocities()
+
+                return 'INIT'
+            else:
+                return 'RUNNING'
             
     def publish_zero_velocities(self):
         zero_twist = geometry_msgs.msg.Twist()
