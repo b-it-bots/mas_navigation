@@ -14,7 +14,7 @@
         
         <node pkg="mcr_manipulation_measurers" type="component_wise_pose_error_calculator_node" name="pose_error_calculator" output="screen">
 
-            <remap from="~pose_1" to="/direct_base_controller/pose_converter/converted_pose" />
+            <remap from="~pose_1" to="pose_converter/converted_pose" />
 
             <!-- the cycle rate of the node (in Hz) -->
             <param name="loop_rate" type="double" value="100"/>
@@ -45,12 +45,12 @@
             <param name="p_gain_x" type="double" value="1.4"/>
             <param name="p_gain_y" type="double" value="1.4"/>
             <param name="p_gain_yaw" type="double" value="1.2"/>
-
-            <remap from="~controlled_twist" to="/direct_base_controller/twist_limiter/twist"/>
         </node>
 
 
         <node pkg="mcr_twist_limiter" type="twist_limiter_node" name="twist_limiter" output="screen">
+
+	    <remap from="~twist" to ="twist_controller/controlled_twist" />
 
             <!-- the cycle rate of the node (in Hz) -->
             <param name="loop_rate" type="double" value="100"/>
@@ -80,16 +80,16 @@
    
         </node>
         
-        <node pkg="mcr_relative_base_controller" type="direct_base_controller_coordinator_node" name="direct_base_controller_coordinator" output="screen">
+        <node pkg="mcr_relative_base_controller" type="direct_base_controller_coordinator_node" name="coordinator" output="screen">
 
-            <remap from="~pose_converter_event_in" to="a" />
-            <remap from="~pose_error_calculator_event_in" to="b" />
-            <remap from="~pose_error_monitor_event_in" to="c" />
-            <remap from="~twist_controller_event_in" to="d" />
-            <remap from="~twist_limiter_event_in" to="e" />
-            <remap from="~twist_synchronizer_event_in" to="f" />
+            <remap from="~pose_converter_event_in" to="pose_converter/event_in" />
+            <remap from="~pose_error_calculator_event_in" to="pose_error_calculator/event_in" />
+            <remap from="~pose_error_monitor_event_in" to="pose_error_monitor/event_in" />
+            <remap from="~twist_controller_event_in" to="twist_controller/event_in" />
+            <remap from="~twist_limiter_event_in" to="twist_limiter/event_in" />
+            <remap from="~twist_synchronizer_event_in" to="twist_synchronizer/event_in" />
             
-            <remap from="~pose_monitor_feedback" to="g" />
+            <remap from="~pose_monitor_feedback" to="pose_error_monitor/feedback" />
             <remap from="~twist" to="/cmd_vel" />
 
             <!-- the cycle rate of the node (in Hz) -->
