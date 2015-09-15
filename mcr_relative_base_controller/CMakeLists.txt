@@ -82,6 +82,8 @@ install(DIRECTORY ros/launch/
 
 
 ### TESTS
+roslint_python()
+
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   find_package(roslaunch REQUIRED)
