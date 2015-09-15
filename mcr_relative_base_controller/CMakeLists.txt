@@ -8,9 +8,12 @@ find_package(catkin REQUIRED
     nav_msgs
     roscpp
     roslint
+    rospy
     std_msgs
     tf  
 )
+
+catkin_python_setup()
 
 generate_dynamic_reconfigure_options(
   ros/config/RelativeBaseController.cfg
@@ -20,8 +23,17 @@ catkin_package(
   CATKIN_DEPENDS
     geometry_msgs
     nav_msgs
+    rospy
     std_msgs
+    mcr_geometric_relation_monitors
+    mcr_common_converters
+    mcr_twist_controller
+    mcr_twist_limiter
+    mcr_twist_synchronizer
+    mcr_manipulation_measurers
 )
+
+
 
 include_directories(
   ros/include
@@ -51,6 +63,11 @@ target_link_libraries(relative_base_controller_mockup
 )
 
 ### INSTALLS
+install(PROGRAMS
+  ros/scripts/direct_base_controller_coordinator_node
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 install(TARGETS relative_base_controller_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

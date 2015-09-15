@@ -79,6 +79,26 @@
             <param name="angular_synchronization" type="bool" value="true"/>
    
         </node>
+        
+        <node pkg="mcr_relative_base_controller" type="direct_base_controller_coordinator_node" name="direct_base_controller_coordinator" output="screen">
+
+            <remap from="~pose_converter_event_in" to="a" />
+            <remap from="~pose_error_calculator_event_in" to="b" />
+            <remap from="~pose_error_monitor_event_in" to="c" />
+            <remap from="~twist_controller_event_in" to="d" />
+            <remap from="~twist_limiter_event_in" to="e" />
+            <remap from="~twist_synchronizer_event_in" to="f" />
+            
+            <remap from="~pose_monitor_feedback" to="g" />
+            <remap from="~twist" to="/cmd_vel" />
+
+            <!-- the cycle rate of the node (in Hz) -->
+            <param name="loop_rate" type="double" value="100"/>
+
+            <!-- Maximum linear velocities in the axes X, Y and Z (in meters/second) -->
+            <param name="angular_synchronization" type="bool" value="true"/>
+   
+        </node>
 
     </group>
     
