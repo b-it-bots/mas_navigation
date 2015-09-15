@@ -2,17 +2,7 @@
 <!-- Note: this is a launch file to tune this component for different tasks. -->
 <launch>
     <group ns="direct_base_controller">
-    
-        <!-- Helper GUI's ToDO: delete later on -->
-        <node pkg="mir_pregrasp_planner" type="pose_mock_up_gui_node" name="pose_mock_up_gui" output="screen">
-        
-            <!-- the cycle rate of the node (in hz) -->
-            <param name="loop_rate" type="double" value="10"/>
-
-            <!-- Reference frame of the published pose -->
-            <param name="reference_frame" type="str" value="odom"/>
-        </node>
-        
+            
         <node pkg="mcr_common_converters" type="transform_to_pose_converter_node" name="pose_converter" output="screen">
         
             <!-- the cycle rate of the node (in Hz) -->
@@ -25,7 +15,6 @@
         <node pkg="mcr_manipulation_measurers" type="component_wise_pose_error_calculator_node" name="pose_error_calculator_trigger" output="screen">
 
             <remap from="~pose_1" to="/direct_base_controller/pose_converter/converted_pose" />
-            <remap from="~pose_2" to="/direct_base_controller/pose_mock_up_gui/mock_up_pose" />
 
             <!-- the cycle rate of the node (in Hz) -->
             <param name="loop_rate" type="double" value="100"/>
