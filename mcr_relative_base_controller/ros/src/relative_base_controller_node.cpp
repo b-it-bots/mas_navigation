@@ -123,9 +123,13 @@ void BaseMotionController::odomCallback(const nav_msgs::Odometry &odom)
 
 void BaseMotionController::run()
 {
+    int rate;
+    nh_.param<int>("loop_rate", rate, 30);
+    ros::Rate loop_rate(rate);
+
     while (ros::ok())
     {
-        ros::Rate(10).sleep();
+        loop_rate.sleep();
         ros::spinOnce();
         // wait for start trigger and new Twist message
         if (!start_relative_movement_ || !new_command_sent_)
