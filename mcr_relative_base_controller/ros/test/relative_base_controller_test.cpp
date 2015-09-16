@@ -38,7 +38,7 @@ TEST(relative_base_controller_test, test_move_without_event)
     move_command.pose.position.x = 0.1;
 
     move_command_pub.publish(move_command);
-    ros::Rate(0.1).sleep();
+    sleep(0.1);
     ros::spinOnce();
     ASSERT_EQ(is_moving, false);
 }
