@@ -386,7 +386,7 @@ bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f &force_field)
         is_oscillation_detection_initialized_ = true;
     }
 
-    if (number_of_oscillations_ < allowed_oscillations_)
+    if (number_of_oscillations_ > allowed_oscillations_)
     {
         // more than "n" allowed oscillations have been detected on the force field
         return true;
