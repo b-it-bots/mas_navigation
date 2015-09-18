@@ -142,8 +142,8 @@ class DirectBaseControllerCoordinator(object):
                 self.publish_zero_velocities()
 
                 return 'INIT'
-            else:
-                return 'RUNNING'
+
+        return 'RUNNING'
             
     def publish_zero_velocities(self):
         zero_twist = geometry_msgs.msg.Twist()
