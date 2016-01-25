@@ -322,11 +322,13 @@ void CollisionVelocityFilterNode::update()
             + fabs(desired_twist_msg_.angular.x);
         double sum_safe = fabs(safe_twist_.linear.x) + fabs(safe_twist_.linear.y) + fabs(safe_twist_.angular.x);
 
-        if (sum_desired > 0.0 && sum_safe == 0.0) {
+        if (sum_desired > 0.0 && sum_safe == 0.0) 
+        {
             event_out_.data = "e_zero_velocities_forwarded";
             pub_event_.publish(event_out_);
         }
-        else if (sum_desired != sum_safe) {
+        else if (sum_desired != sum_safe) 
+        {
             event_out_.data = "e_reduced_velocities_forwarded";
             pub_event_.publish(event_out_);
         }
