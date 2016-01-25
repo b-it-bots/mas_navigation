@@ -10,6 +10,7 @@ find_package(catkin REQUIRED
     sensor_msgs
     std_msgs
     tf
+    roslint
 )
 
 find_package(PCL 1.7 REQUIRED)
@@ -37,7 +38,7 @@ target_link_libraries(mcr_collision_velocity_filter
 
 ### EXECUTABLES ###
 add_executable(collision_velocity_filter_node
-  ros/src/collision_velocity_filter_node.cpp 
+  ros/src/collision_velocity_filter_node.cpp
 )
 add_dependencies(collision_velocity_filter_node
   ${catkin_EXPORTED_TARGETS}
@@ -50,9 +51,11 @@ target_link_libraries(collision_velocity_filter_node
 
 
 ### TESTS
+roslint_cpp()
+
 if(CATKIN_ENABLE_TESTING)
   find_package(roslaunch REQUIRED)
-  
+
   roslaunch_add_file_check(ros/launch footprint_file:=${PROJECT_SOURCE_DIR}/ros/test/footprint.yaml)
 endif()
 
