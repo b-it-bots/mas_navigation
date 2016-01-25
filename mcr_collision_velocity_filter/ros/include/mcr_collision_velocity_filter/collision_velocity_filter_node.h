@@ -31,8 +31,8 @@
 
 #include <mcr_collision_velocity_filter/collision_velocity_filter.h>
 
-using namespace message_filters;
-using namespace message_filters::sync_policies;
+using message_filters::Synchronizer;
+using message_filters::sync_policies::ApproximateTime;
 
 class CollisionVelocityFilterNode
 {

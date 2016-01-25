@@ -10,6 +10,7 @@
  */
 
 #include <mcr_collision_velocity_filter/collision_velocity_filter.h>
+#include <vector>
 
 CollisionVelocityFilter::CollisionVelocityFilter() :
     soft_padding_front_rear_(0.15), hard_padding_front_rear_(0.02), soft_padding_left_right_(0.15),

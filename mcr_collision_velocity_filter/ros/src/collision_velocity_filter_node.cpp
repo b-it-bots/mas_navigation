@@ -10,6 +10,8 @@
  */
 
 #include <mcr_collision_velocity_filter/collision_velocity_filter_node.h>
+#include <vector>
+#include <string>
 
 CollisionVelocityFilterNode::CollisionVelocityFilterNode() :
         footprint_msg_received(false), laser_scans_as_pcl_cloud_received(false), desired_twist_msg_received_(false),
