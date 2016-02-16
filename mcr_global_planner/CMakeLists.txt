@@ -17,9 +17,9 @@ find_package(catkin REQUIRED
 
 catkin_package(
   INCLUDE_DIRS 
-     ros/include
+     ros/include/mcr_global_planner_with_orientations
   LIBRARIES 
-     ${PROJECT_NAME}
+     mcr_global_planner_with_orientations
   CATKIN_DEPENDS
     costmap_2d
     dynamic_reconfigure
@@ -39,24 +39,24 @@ include_directories(
 )
 
 add_library(
-  ${PROJECT_NAME} ros/src/${PROJECT_NAME}/global_planner_wo.cpp
+    mcr_global_planner_with_orientations ros/src/mcr_global_planner_with_orientations/global_planner_with_orientations.cpp
 )
 target_link_libraries(
-  ${PROJECT_NAME} ${catkin_LIBRARIES}
+  mcr_global_planner_with_orientations ${catkin_LIBRARIES}
 )
 
 add_dependencies(
-  ${PROJECT_NAME} ${PROJECT_NAME}_gencfg
+  mcr_global_planner_with_orientations mcr_global_planner_with_orientations_gencfg
 )
 
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS mcr_global_planner_with_orientations
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY ros/include/mcr_global_planner_with_orientations/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 

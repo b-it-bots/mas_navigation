@@ -1,5 +1,5 @@
-<library path="lib/libmcr_global_planner">
-    <class name="mcr_global_planner/GlobalPlannerWO" type="mcr_global_planner::GlobalPlannerWO" base_class_type="nav_core::BaseGlobalPlanner">
+<library path="lib/libmcr_global_planner_with_orientations">
+    <class name="mcr_global_planner/GlobalPlannerWithOrientations" type="mcr_global_planner::GlobalPlannerWithOrientations" base_class_type="nav_core::BaseGlobalPlanner">
         <description>
             Wraps ros global planner and modifies the plan by removing poses and adding orientations.
         </description>

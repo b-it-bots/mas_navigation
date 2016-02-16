@@ -11,16 +11,16 @@
 
 namespace mcr_global_planner
 {
-class GlobalPlannerWO : public global_planner::GlobalPlanner
+class GlobalPlannerWithOrientations : public global_planner::GlobalPlanner
 {
     private:
         // Minimun distance between two poses.
-        double pose_distance_;
+        double min_pose_distance_;
         // Maximum amount of poses that should be driven in onmi mode only
-        int omni_poses_;
+        int max_omni_poses_;
         // Publisher used to publish the pose-array
-        ros::Publisher pub_plan;
-        bool initialized;
+        ros::Publisher pub_pose_array_;
+        bool initialized_;
 
         /*
          * Filters the plan by removing poses and adds orientations to remaining ones.
@@ -63,11 +63,11 @@ class GlobalPlannerWO : public global_planner::GlobalPlanner
         /*
          * mod like helper method
          */
-        double modlike(double number, double limit);
+        double modlike(const double number, const double limit);
 
     public:
-        GlobalPlannerWO();
-        GlobalPlannerWO(std::string name, costmap_2d::Costmap2D *costmap, std::string frame_id);
+        GlobalPlannerWithOrientations();
+        GlobalPlannerWithOrientations(std::string name, costmap_2d::Costmap2D *costmap, std::string frame_id);
 
         void initialize(std::string name, costmap_2d::Costmap2DROS *costmap_ros);
         void initialize(std::string name, costmap_2d::Costmap2D *costmap, std::string frame_id);
