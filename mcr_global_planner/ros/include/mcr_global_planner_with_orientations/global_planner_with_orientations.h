@@ -1,5 +1,5 @@
-#ifndef _GLOBALPLANNERWO_H
-#define _GLOBALPLANNERWO_H
+#ifndef _GLOBALPLANNERWITHORIENTATIONS_H
+#define _GLOBALPLANNERWITHORIENTATIONS_H
 
 /********************************************************************
  * Copyright [2015] <Bonn-Rhein-Sieg University>
