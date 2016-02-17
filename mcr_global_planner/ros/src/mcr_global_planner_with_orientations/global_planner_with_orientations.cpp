@@ -42,8 +42,8 @@ void GlobalPlannerWithOrientations::initializeThis(std::string name, costmap_2d:
         GlobalPlanner::plan_pub_.shutdown();
         ros::NodeHandle private_nh("~/" + name);
 
-        private_nh.param("pose_distance", min_pose_distance_, 0.05);
-        private_nh.param("omni_poses", max_omni_poses_, 20);
+        private_nh.param("min_pose_distance", min_pose_distance_, 0.05);
+        private_nh.param("max_omni_poses", max_omni_poses_, 20);
         pub_pose_array_ = private_nh.advertise< geometry_msgs::PoseArray >("plan", 1);
     }
 }
