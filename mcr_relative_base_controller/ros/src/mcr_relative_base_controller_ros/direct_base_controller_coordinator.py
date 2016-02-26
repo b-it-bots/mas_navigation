@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 """
 This component moves the mobile base in Cartesian space until a pose is reached.
 
@@ -14,7 +15,6 @@ The component serves as a configurator/coordinator, i.e. it sets the required
 parameters for all the components and starts/stops them accordingly.
 
 """
-#-*- encoding: utf-8 -*-
 
 import rospy
 import std_msgs.msg
