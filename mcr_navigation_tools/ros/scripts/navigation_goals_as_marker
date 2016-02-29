@@ -22,6 +22,9 @@ if (__name__ == "__main__"):
 		for item in param_list:
 			pose = rospy.get_param('/script_server/base/' + item)
 
+			if pose is not list and len(pose) != 3:
+				continue
+
 			single_marker = Marker()
 			single_marker_text = Marker()
 
