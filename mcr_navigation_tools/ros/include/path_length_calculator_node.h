@@ -8,8 +8,8 @@
  * 
  */
 
-#ifndef PATH_LENGTH_CALC_NODE_H
-#define PATH_LENGTH_CALC_NODE_H
+#ifndef PATH_LENGTH_CALCULATOR_NODE_H
+#define PATH_LENGTH_CALCULATOR_NODE_H
 
 #include <ros/ros.h>
 #include <ros/rate.h>
@@ -55,14 +55,14 @@ class PathLengthCalcNode
 
         // for receiving event in msg
         std_msgs::String event_in_msg_;
-        
+
         // generic class that receives a path msg and returns path length
         PathLengthCalculator path_length_calculator_;
-        
+
         // stores the path received in the callback
         nav_msgs::Path global_plan_;
-        
+
         // flag to indicate that path msg was received from ros network
         bool global_plan_is_available_;
 };
-#endif  // PATH_LENGTH_CALC_NODE_H
+#endif  // PATH_LENGTH_CALCULATOR_NODE_H

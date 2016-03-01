@@ -9,6 +9,7 @@
  */
 
 #include <path_length_calculator_node.h>
+#include <string>
 
 PathLengthCalcNode::PathLengthCalcNode() : nh_("~")
 {
@@ -17,7 +18,7 @@ PathLengthCalcNode::PathLengthCalcNode() : nh_("~")
     global_plan_sub_ = nh_.subscribe("plan", 1, &PathLengthCalcNode::globalPlanCallback, this);
 
     // publications
-    event_out_pub_ = nh_.advertise<std_msgs::String>("event_out", 2);    
+    event_out_pub_ = nh_.advertise<std_msgs::String>("event_out", 2);
     path_length_pub_ = nh_.advertise<std_msgs::Float64>("path_length", 1);
 }
 
@@ -67,7 +68,7 @@ void PathLengthCalcNode::main_loop()
     // for publishing event_out string msg
     std_msgs::String even_out_msg;
     even_out_msg.data = "not_set";
-    
+
     // setting the frequency at which the node will run
     ros::Rate loop_rate(node_frequency_);
 
@@ -85,7 +86,7 @@ void PathLengthCalcNode::main_loop()
                 {
                     // stores the result of the generic length class to be published later on
                     std_msgs::Float64 path_length;
-                    
+
                     // set global plan
                     path_length_calculator_.set_path(global_plan_);
 
@@ -118,7 +119,8 @@ void PathLengthCalcNode::main_loop()
                 }
                 else
                 {
-                    ROS_ERROR("event_in : trigger was received, but there is not path, or you already query about its length before");
+                    ROS_ERROR("event_in : trigger was received, but there is not path");
+                    ROS_WARN("Did you already query about its length before?");
 
                     // publish even_out : "e_failure"
                     even_out_msg.data = std::string("e_failure");
