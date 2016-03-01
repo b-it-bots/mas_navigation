@@ -38,7 +38,6 @@ void PathLengthCalcNode::init()
     // set initial member variables values
     callback_received_ = false;
     node_frequency_ = 0.0;
-    path_length_.data = 0.0;
     global_plan_is_available_ = false;
 }
 
@@ -106,7 +105,7 @@ void PathLengthCalcNode::main_loop()
                         ROS_INFO("path length = %lf [m]", path_length.data);
 
                         // publish result
-                        path_length_publisher.publish(path_length);
+                        path_length_pub_.publish(path_length);
 
                         ROS_INFO("Path length succesfully calculated !");
                         // publish even_out : "e_success"
@@ -149,19 +148,16 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "path_length_calculator_node");
 
     // create object of this node class
-    PathLengthCalcNode run_script_node;
+    PathLengthCalcNode path_length_calc_node;
 
     // initialize
-    run_script_node.init();
+    path_length_calc_node.init();
 
     // get parameters
-    run_script_node.get_params();
-
-    // one time node setup
-    run_script_node.one_time_node_setup();
+    path_length_calc_node.get_params();
 
     // main loop function
-    run_script_node.main_loop();
+    path_length_calc_node.main_loop();
 
     return 0;
 }

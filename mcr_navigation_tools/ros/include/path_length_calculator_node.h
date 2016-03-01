@@ -15,6 +15,7 @@
 #include <ros/rate.h>
 #include <nav_msgs/Path.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
 #include <path_length_calculator/path_length_calculator.h>
 
 class PathLengthCalcNode
@@ -60,5 +61,8 @@ class PathLengthCalcNode
         
         // stores the path received in the callback
         nav_msgs::Path global_plan_;
+        
+        // flag to indicate that path msg was received from ros network
+        bool global_plan_is_available_;
 };
 #endif  // PATH_LENGTH_CALC_NODE_H
