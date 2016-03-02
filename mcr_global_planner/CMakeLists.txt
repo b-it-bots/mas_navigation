@@ -17,7 +17,7 @@ find_package(catkin REQUIRED
 
 catkin_package(
   INCLUDE_DIRS 
-     ros/include/mcr_global_planner_with_orientations
+     ros/include
   LIBRARIES 
      mcr_global_planner_with_orientations
   CATKIN_DEPENDS
@@ -56,7 +56,7 @@ install(TARGETS mcr_global_planner_with_orientations
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(DIRECTORY ros/include/mcr_global_planner_with_orientations/
+install(DIRECTORY ros/include/mcr_global_planner_with_orientations
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
