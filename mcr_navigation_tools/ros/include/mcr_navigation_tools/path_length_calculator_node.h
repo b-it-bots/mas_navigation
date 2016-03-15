@@ -39,12 +39,12 @@ class PathLengthCalcNode
         // callback to receive navigation path msg
         void globalPlanCallback(const nav_msgs::Path::ConstPtr& msg);
 
+        // frequency at which the node will run
+        double node_frequency_;
+
     private:
         // flag used to know when we have received a callback
         bool callback_received_;
-
-        // frequency at which the node will run
-        double node_frequency_;
 
         // ros related variables
         ros::NodeHandle nh_;
@@ -55,6 +55,9 @@ class PathLengthCalcNode
 
         // for receiving event in msg
         std_msgs::String event_in_msg_;
+
+        // for publishing event_out string msg
+        std_msgs::String even_out_msg_;
 
         // generic class that receives a path msg and returns path length
         PathLengthCalculator path_length_calculator_;

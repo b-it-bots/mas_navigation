@@ -37,6 +37,7 @@ void PathLengthCalcNode::init()
     callback_received_ = false;
     node_frequency_ = 0.0;
     global_plan_is_available_ = false;
+    even_out_msg_.data = "not_set";
     ROS_INFO("Path length calculator node initialized...");
 }
 
@@ -63,82 +64,69 @@ void PathLengthCalcNode::globalPlanCallback(const nav_msgs::Path::ConstPtr& msg)
 
 void PathLengthCalcNode::update()
 {
-    // for publishing event_out string msg
-    std_msgs::String even_out_msg;
-    even_out_msg.data = "not_set";
+    // listen to callbacks
+    ros::spinOnce();
 
-    // setting the frequency at which the node will run
-    ros::Rate loop_rate(node_frequency_);
-
-    while (ros::ok())
+    if (callback_received_)
     {
-        // listen to callbacks
-        ros::spinOnce();
+        // lower flag
+        callback_received_ = false;
 
-        if (callback_received_)
+        // checking for event in msg content
+        if (event_in_msg_.data == "e_trigger")
         {
-            // lower flag
-            callback_received_ = false;
-
-            // checking for event in msg content
-            if (event_in_msg_.data == "e_trigger")
+            if (global_plan_is_available_)
             {
-                if (global_plan_is_available_)
+                // stores the result of the generic length class to be published later on
+                std_msgs::Float64 path_length;
+
+                // set global plan
+                path_length_calculator_.setPath(global_plan_);
+
+                // calculate path length of global plan (array of poses)
+                path_length.data = path_length_calculator_.computeLength();
+
+                if (path_length.data == -1)
                 {
-                    // stores the result of the generic length class to be published later on
-                    std_msgs::Float64 path_length;
+                    ROS_ERROR("Error while calculating path length");
 
-                    // set global plan
-                    path_length_calculator_.setPath(global_plan_);
-
-                    // calculate path length of global plan (array of poses)
-                    path_length.data = path_length_calculator_.computeLength();
-
-                    if (path_length.data == -1)
-                    {
-                        ROS_ERROR("Error while calculating path length");
-
-                        // publish even_out : "e_failure"
-                        even_out_msg.data = std::string("e_failure");
-                        pub_event_out_.publish(even_out_msg);
-                    }
-                    else
-                    {
-                        ROS_INFO("path length = %lf [m]", path_length.data);
-
-                        // publish result
-                        path_length_pub_.publish(path_length);
-
-                        ROS_INFO("Path length succesfully calculated !");
-                        // publish even_out : "e_success"
-                        even_out_msg.data = std::string("e_success");
-                        pub_event_out_.publish(even_out_msg);
-                    }
-
-                    // reset flag
-                    global_plan_is_available_ = false;
+                    // publish even_out : "e_failure"
+                    even_out_msg_.data = std::string("e_failure");
+                    pub_event_out_.publish(even_out_msg_);
                 }
                 else
                 {
-                    ROS_ERROR("event_in : trigger was received, but there is not path");
-                    ROS_WARN("Did you already query about its length before?");
+                    ROS_INFO("path length = %lf [m]", path_length.data);
 
-                    // publish even_out : "e_failure"
-                    even_out_msg.data = std::string("e_failure");
-                    pub_event_out_.publish(even_out_msg);
+                    // publish result
+                    path_length_pub_.publish(path_length);
+
+                    ROS_INFO("Path length succesfully calculated !");
+                    // publish even_out : "e_success"
+                    even_out_msg_.data = std::string("e_success");
+                    pub_event_out_.publish(even_out_msg_);
                 }
+
+                // reset flag
+                global_plan_is_available_ = false;
             }
             else
             {
+                ROS_ERROR("event_in : trigger was received, but there is not path");
+                ROS_WARN("Did you already query about its length before?");
+
                 // publish even_out : "e_failure"
-                even_out_msg.data = std::string("e_failure");
-                pub_event_out_.publish(even_out_msg);
-                ROS_ERROR("event_in message received not known, admissible strings are : e_trigger");
+                even_out_msg_.data = std::string("e_failure");
+                pub_event_out_.publish(even_out_msg_);
             }
         }
-
-        // sleep to control the node frequency
-        loop_rate.sleep();
+        else
+        {
+            // publish even_out : "e_failure"
+            even_out_msg_.data = std::string("e_failure");
+            pub_event_out_.publish(even_out_msg_);
+            ROS_ERROR("event_in message received not known, admissible strings are : e_trigger");
+        }
     }
 }
 
@@ -156,9 +144,17 @@ int main(int argc, char **argv)
     // get parameters
     path_length_calc_node.getParams();
 
-    // main loop function
-    path_length_calc_node.update();
+    // setting the frequency at which the node will run
+    ros::Rate loop_rate(path_length_calc_node.node_frequency_);
+
+    while (ros::ok())
+    {
+        // main loop function
+        path_length_calc_node.update();
+
+        // sleep to control the node frequency
+        loop_rate.sleep();
+    }
 
     return 0;
 }
-
