@@ -44,8 +44,8 @@ void PoseArrayToPath::getParams()
 
 void PoseArrayToPath::poseArrayCallback(const geometry_msgs::PoseArray::ConstPtr& msg)
 {
-    callback_received_ = true;
     pose_array_msg_ = *msg;
+    callback_received_ = true;
 }
 
 void PoseArrayToPath::update()
