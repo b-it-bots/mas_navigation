@@ -23,11 +23,11 @@ include_directories(
 )
 
 ### library
-add_library(path_length_calculator_lib common/src/path_length_calculator.cpp)
+add_library(path_length_calculator common/src/path_length_calculator.cpp)
 
 ### EXECUTABLES
 add_executable(path_length_calculator_node ros/src/path_length_calculator_node.cpp)
-target_link_libraries(path_length_calculator_node ${catkin_LIBRARIES} path_length_calculator_lib)
+target_link_libraries(path_length_calculator_node ${catkin_LIBRARIES} path_length_calculator)
 
 add_executable(pose_array_to_path_node ros/src/pose_array_to_path.cpp)
 target_link_libraries(pose_array_to_path_node ${catkin_LIBRARIES})
@@ -48,7 +48,7 @@ install(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(TARGETS path_length_calculator_lib
+install(TARGETS path_length_calculator
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
