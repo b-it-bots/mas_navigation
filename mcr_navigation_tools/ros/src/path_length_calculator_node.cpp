@@ -72,6 +72,9 @@ void PathLengthCalcNode::update()
 
     while (ros::ok())
     {
+        // listen to callbacks
+        ros::spinOnce();
+
         if (callback_received_)
         {
             // lower flag
@@ -133,9 +136,6 @@ void PathLengthCalcNode::update()
                 ROS_ERROR("event_in message received not known, admissible strings are : e_trigger");
             }
         }
-
-        // listen to callbacks
-        ros::spinOnce();
 
         // sleep to control the node frequency
         loop_rate.sleep();
