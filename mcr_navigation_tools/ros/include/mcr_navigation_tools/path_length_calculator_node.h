@@ -8,8 +8,8 @@
  * 
  */
 
-#ifndef PATH_LENGTH_CALCULATOR_NODE_H
-#define PATH_LENGTH_CALCULATOR_NODE_H
+#ifndef MCR_NAVIGATION_TOOLS_PATH_LENGTH_CALCULATOR_NODE_H
+#define MCR_NAVIGATION_TOOLS_PATH_LENGTH_CALCULATOR_NODE_H
 
 #include <ros/ros.h>
 #include <ros/rate.h>
@@ -68,4 +68,4 @@ class PathLengthCalcNode
         // flag to indicate that path msg was received from ros network
         bool global_plan_is_available_;
 };
-#endif  // PATH_LENGTH_CALCULATOR_NODE_H
+#endif  // MCR_NAVIGATION_TOOLS_PATH_LENGTH_CALCULATOR_NODE_H
