@@ -14,20 +14,20 @@
 PathLengthCalcNode::PathLengthCalcNode() : nh_("~")
 {
     // subscriptions
-    event_in_sub_ = nh_.subscribe("event_in", 1, &PathLengthCalcNode::eventInCallback, this);
+    sub_event_in_ = nh_.subscribe("event_in", 1, &PathLengthCalcNode::eventInCallback, this);
     global_plan_sub_ = nh_.subscribe("plan", 1, &PathLengthCalcNode::globalPlanCallback, this);
 
     // publications
-    event_out_pub_ = nh_.advertise<std_msgs::String>("event_out", 2);
+    pub_event_out_ = nh_.advertise<std_msgs::String>("event_out", 2);
     path_length_pub_ = nh_.advertise<std_msgs::Float64>("path_length", 1);
 }
 
 PathLengthCalcNode::~PathLengthCalcNode()
 {
     // shut down publishers and subscribers
-    event_in_sub_.shutdown();
+    sub_event_in_.shutdown();
     global_plan_sub_.shutdown();
-    event_out_pub_.shutdown();
+    pub_event_out_.shutdown();
     path_length_pub_.shutdown();
 }
 
@@ -99,7 +99,7 @@ void PathLengthCalcNode::update()
 
                         // publish even_out : "e_failure"
                         even_out_msg.data = std::string("e_failure");
-                        event_out_pub_.publish(even_out_msg);
+                        pub_event_out_.publish(even_out_msg);
                     }
                     else
                     {
@@ -111,7 +111,7 @@ void PathLengthCalcNode::update()
                         ROS_INFO("Path length succesfully calculated !");
                         // publish even_out : "e_success"
                         even_out_msg.data = std::string("e_success");
-                        event_out_pub_.publish(even_out_msg);
+                        pub_event_out_.publish(even_out_msg);
                     }
 
                     // reset flag
@@ -124,14 +124,14 @@ void PathLengthCalcNode::update()
 
                     // publish even_out : "e_failure"
                     even_out_msg.data = std::string("e_failure");
-                    event_out_pub_.publish(even_out_msg);
+                    pub_event_out_.publish(even_out_msg);
                 }
             }
             else
             {
                 // publish even_out : "e_failure"
                 even_out_msg.data = std::string("e_failure");
-                event_out_pub_.publish(even_out_msg);
+                pub_event_out_.publish(even_out_msg);
                 ROS_ERROR("event_in message received not known, admissible strings are : e_trigger");
             }
         }

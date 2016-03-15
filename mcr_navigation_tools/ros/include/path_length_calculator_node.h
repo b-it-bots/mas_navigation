@@ -48,9 +48,9 @@ class PathLengthCalcNode
 
         // ros related variables
         ros::NodeHandle nh_;
-        ros::Publisher event_out_pub_;
+        ros::Publisher pub_event_out_;
         ros::Publisher path_length_pub_;
-        ros::Subscriber event_in_sub_;
+        ros::Subscriber sub_event_in_;
         ros::Subscriber global_plan_sub_;
 
         // for receiving event in msg
