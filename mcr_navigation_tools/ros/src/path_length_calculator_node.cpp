@@ -51,8 +51,8 @@ void PathLengthCalcNode::getParams()
 
 void PathLengthCalcNode::eventInCallback(const std_msgs::String::ConstPtr& msg)
 {
-    callback_received_ = true;
     event_in_msg_ = *msg;
+    callback_received_ = true;
 }
 
 void PathLengthCalcNode::globalPlanCallback(const nav_msgs::Path::ConstPtr& msg)
