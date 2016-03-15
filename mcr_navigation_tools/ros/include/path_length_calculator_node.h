@@ -16,7 +16,7 @@
 #include <nav_msgs/Path.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/String.h>
-#include <path_length_calculator/path_length_calculator.h>
+#include <mcr_navigation_tools/path_length_calculator.h>
 
 class PathLengthCalcNode
 {
