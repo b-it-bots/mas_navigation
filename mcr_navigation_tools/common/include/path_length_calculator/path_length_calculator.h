@@ -30,8 +30,6 @@ class PathLengthCalculator
         double compute_length();
 
     private:
-        double distance_between_two_points(double &x0, double &y0, double &x1, double &y1);
-
         // to store the plan path (array of poses) from which the distance will be calculated
         nav_msgs::Path plan_;
 
