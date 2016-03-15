@@ -86,7 +86,7 @@ void PoseArrayToPath::update()
 int main(int argc, char **argv)
 {
     // init node
-    ros::init(argc, argv, "pose_array_to_path_node");
+    ros::init(argc, argv, "pose_array_to_path");
 
     // create object of this node class
     PoseArrayToPath pose_array_to_path_node;
