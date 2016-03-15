@@ -8,7 +8,7 @@
  * 
  */
 
-#include <path_length_calculator_node.h>
+#include <mcr_navigation_tools/path_length_calculator_node.h>
 #include <string>
 
 PathLengthCalcNode::PathLengthCalcNode() : nh_("~")

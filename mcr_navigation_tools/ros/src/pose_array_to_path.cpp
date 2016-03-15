@@ -7,7 +7,7 @@
  * 
  */
 
-#include <pose_array_to_path.h>
+#include <mcr_navigation_tools/pose_array_to_path.h>
 
 PoseArrayToPath::PoseArrayToPath() : nh_("~")
 {
