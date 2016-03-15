@@ -42,8 +42,8 @@ class PoseArrayToPath
 
         // ros related variables
         ros::NodeHandle nh_;
-        ros::Publisher path_pub_;
-        ros::Subscriber pose_array_sub_;
+        ros::Publisher pub_;
+        ros::Subscriber sub_;
 
         // stores pose array msg received from ros network
         geometry_msgs::PoseArray pose_array_msg_;

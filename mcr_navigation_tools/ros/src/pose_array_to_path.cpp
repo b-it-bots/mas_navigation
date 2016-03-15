@@ -12,17 +12,17 @@
 PoseArrayToPath::PoseArrayToPath() : nh_("~")
 {
     // subscriptions
-    pose_array_sub_ = nh_.subscribe("pose_array_to_convert", 1, &PoseArrayToPath::poseArrayCallback, this);
+    sub_ = nh_.subscribe("pose_array_to_convert", 1, &PoseArrayToPath::poseArrayCallback, this);
 
     // publications
-    path_pub_ = nh_.advertise<nav_msgs::Path>("pose_array_to_path_converted", 2);
+    pub_ = nh_.advertise<nav_msgs::Path>("pose_array_to_path_converted", 2);
 }
 
 PoseArrayToPath::~PoseArrayToPath()
 {
     // shut down publishers and subscribers
-    pose_array_sub_.shutdown();
-    path_pub_.shutdown();
+    sub_.shutdown();
+    pub_.shutdown();
 }
 
 void PoseArrayToPath::init()
@@ -83,7 +83,7 @@ void PoseArrayToPath::update()
             }
 
             // publish path
-            path_pub_.publish(path_msg);
+            pub_.publish(path_msg);
         }
 
         // listen to callbacks
