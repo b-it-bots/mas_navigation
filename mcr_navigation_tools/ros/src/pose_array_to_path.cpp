@@ -50,45 +50,36 @@ void PoseArrayToPath::poseArrayCallback(const geometry_msgs::PoseArray::ConstPtr
 
 void PoseArrayToPath::update()
 {
-    // setting the frequency at which the node will run
-    ros::Rate loop_rate(node_frequency_);
+    // listen to callbacks
+    ros::spinOnce();
 
-    // to publish the pose array as path
-    nav_msgs::Path path_msg;
-    geometry_msgs::PoseStamped pose_stamped_msg;
-
-    while (ros::ok())
+    if (callback_received_)
     {
-        // listen to callbacks
-        ros::spinOnce();
+        // to publish the pose array as path
+        nav_msgs::Path path_msg;
+        geometry_msgs::PoseStamped pose_stamped_msg;
 
-        if (callback_received_)
+        // lower flag
+        callback_received_ = false;
+
+        // republish pose array msg as path msg
+        path_msg.header = pose_array_msg_.header;
+        pose_stamped_msg.header = pose_array_msg_.header;
+
+        path_msg.poses.resize(pose_array_msg_.poses.size());
+
+        // loop over all pose arrary poses
+        for (int i = 0; i < pose_array_msg_.poses.size(); i++)
         {
-            // lower flag
-            callback_received_ = false;
+            // create intermediate pose stamped
+            pose_stamped_msg.pose = pose_array_msg_.poses[i];
 
-            // republish pose array msg as path msg
-            path_msg.header = pose_array_msg_.header;
-            pose_stamped_msg.header = pose_array_msg_.header;
-
-            path_msg.poses.resize(pose_array_msg_.poses.size());
-
-            // loop over all pose arrary poses
-            for (int i = 0; i < pose_array_msg_.poses.size(); i++)
-            {
-                // create intermediate pose stamped
-                pose_stamped_msg.pose = pose_array_msg_.poses[i];
-
-                // append the last pose stamped to path
-                path_msg.poses[i] = pose_stamped_msg;
-            }
-
-            // publish path
-            pub_.publish(path_msg);
+            // append the last pose stamped to path
+            path_msg.poses[i] = pose_stamped_msg;
         }
 
-        // sleep to control the node frequency
-        loop_rate.sleep();
+        // publish path
+        pub_.publish(path_msg);
     }
 }
 
@@ -106,8 +97,17 @@ int main(int argc, char **argv)
     // get parameters
     pose_array_to_path_node.getParams();
 
-    // main loop function
-    pose_array_to_path_node.update();
+    // setting the frequency at which the node will run
+    ros::Rate loop_rate(pose_array_to_path_node.node_frequency_);
+
+    while (ros::ok())
+    {
+        // main loop function
+        pose_array_to_path_node.update();
+
+        // sleep to control the node frequency
+        loop_rate.sleep();
+    }
 
     return 0;
 }

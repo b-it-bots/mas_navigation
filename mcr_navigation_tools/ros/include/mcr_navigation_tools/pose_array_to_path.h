@@ -33,12 +33,12 @@ class PoseArrayToPath
         // ros node main loop
         void update();
 
+        // frequency at which the node will run
+        double node_frequency_;
+
     private:
         // flag used to know when we have received a callback
         bool callback_received_;
-
-        // frequency at which the node will run
-        double node_frequency_;
 
         // ros related variables
         ros::NodeHandle nh_;
