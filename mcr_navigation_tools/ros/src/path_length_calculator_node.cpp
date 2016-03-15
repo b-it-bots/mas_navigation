@@ -42,7 +42,7 @@ void PathLengthCalcNode::init()
     global_plan_is_available_ = false;
 }
 
-void PathLengthCalcNode::get_params()
+void PathLengthCalcNode::getParams()
 {
     // getting required parameters from parameter server
     nh_.param("node_frequency", node_frequency_, 10.0);
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
     path_length_calc_node.init();
 
     // get parameters
-    path_length_calc_node.get_params();
+    path_length_calc_node.getParams();
 
     // main loop function
     path_length_calc_node.update();

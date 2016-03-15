@@ -28,7 +28,7 @@ class PathLengthCalcNode
         void init();
 
         // get parameters from param server
-        void get_params();
+        void getParams();
 
         // ros node main loop
         void update();
