@@ -5,7 +5,7 @@
     <arg name="global_plan_topic" default="/move_base/GlobalPlannerWithOrientations/plan" />
     <arg name="path_topic" default="/move_base/GlobalPlannerWithOrientations/path_plan" />
 
-    <node pkg="mcr_navigation_tools" type="pose_array_to_path_node" name="pose_array_to_path" output="screen">
+    <node pkg="mcr_navigation_tools" type="pose_array_to_path_node" name="pose_array_to_path" output="screen" ns="mcr_navigation_tools" >
         <param name="node_frequency" value="10.0" />
         <remap from="~pose_array_to_convert" to="$(arg global_plan_topic)"/>
         <remap from="~pose_array_to_path_converted" to="$(arg path_topic)"/>
