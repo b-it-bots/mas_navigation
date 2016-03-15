@@ -7,8 +7,8 @@
 
     <node pkg="mcr_navigation_tools" type="pose_array_to_path_node" name="pose_array_to_path" output="screen" ns="mcr_navigation_tools" >
         <param name="node_frequency" value="10.0" />
-        <remap from="~pose_array_to_convert" to="$(arg global_plan_topic)"/>
-        <remap from="~pose_array_to_path_converted" to="$(arg path_topic)"/>
+        <remap from="~pose_array" to="$(arg global_plan_topic)"/>
+        <remap from="~path" to="$(arg path_topic)"/>
     </node>
 
 </launch>

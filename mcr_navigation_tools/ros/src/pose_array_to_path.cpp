@@ -12,10 +12,10 @@
 PoseArrayToPath::PoseArrayToPath() : nh_("~")
 {
     // subscriptions
-    sub_ = nh_.subscribe("pose_array_to_convert", 1, &PoseArrayToPath::poseArrayCallback, this);
+    sub_ = nh_.subscribe("pose_array", 1, &PoseArrayToPath::poseArrayCallback, this);
 
     // publications
-    pub_ = nh_.advertise<nav_msgs::Path>("pose_array_to_path_converted", 2);
+    pub_ = nh_.advertise<nav_msgs::Path>("path", 2);
 }
 
 PoseArrayToPath::~PoseArrayToPath()
