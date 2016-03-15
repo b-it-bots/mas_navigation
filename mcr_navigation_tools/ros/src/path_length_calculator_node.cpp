@@ -63,7 +63,7 @@ void PathLengthCalcNode::globalPlanCallback(const nav_msgs::Path::ConstPtr& msg)
     global_plan_is_available_ = true;
 }
 
-void PathLengthCalcNode::main_loop()
+void PathLengthCalcNode::update()
 {
     // for publishing event_out string msg
     std_msgs::String even_out_msg;
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
     path_length_calc_node.get_params();
 
     // main loop function
-    path_length_calc_node.main_loop();
+    path_length_calc_node.update();
 
     return 0;
 }

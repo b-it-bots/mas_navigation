@@ -31,7 +31,7 @@ class PathLengthCalcNode
         void get_params();
 
         // ros node main loop
-        void main_loop();
+        void update();
 
         // callback for event_in msg
         void eventInCallback(const std_msgs::String::ConstPtr& msg);
