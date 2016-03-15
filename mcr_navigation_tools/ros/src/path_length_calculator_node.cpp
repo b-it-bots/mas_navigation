@@ -145,7 +145,7 @@ void PathLengthCalcNode::update()
 int main(int argc, char **argv)
 {
     // init node
-    ros::init(argc, argv, "path_length_calculator_node");
+    ros::init(argc, argv, "path_length_calculator");
 
     // create object of this node class
     PathLengthCalcNode path_length_calc_node;
