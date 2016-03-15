@@ -12,25 +12,25 @@
 
 PathLengthCalculator::PathLengthCalculator()
 {
-    plan_is_set_ = false;
+    is_plan_set_ = false;
 }
 
 PathLengthCalculator::PathLengthCalculator(const nav_msgs::Path &plan)
 {
     plan_ = plan;
-    plan_is_set_ = true;
+    is_plan_set_ = true;
 }
 
 void PathLengthCalculator::set_path(const nav_msgs::Path &plan)
 {
     plan_.poses.clear();
     plan_ = plan;
-    plan_is_set_ = true;
+    is_plan_set_ = true;
 }
 
 double PathLengthCalculator::compute_length()
 {
-    if (!plan_is_set_)
+    if (!is_plan_set_)
     {
         // plan not set
         return -1;

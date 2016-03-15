@@ -34,7 +34,7 @@ class PathLengthCalculator
         nav_msgs::Path plan_;
 
         // flag that controls if compute_length function can be called
-        bool plan_is_set_;
+        bool is_plan_set_;
 };
 
 #endif  // PATH_LENGTH_CALCULATOR_PATH_LENGTH_CALCULATOR_H
