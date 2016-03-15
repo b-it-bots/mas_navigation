@@ -24,10 +24,10 @@ class PathLengthCalculator
         explicit PathLengthCalculator(const nav_msgs::Path &plan);
 
         // to set the value of member variable plan_ from outside of the class
-        void set_path(const nav_msgs::Path &plan);
+        void setPath(const nav_msgs::Path &plan);
 
         // to calculate the length of the path
-        double compute_length();
+        double computeLength();
 
     private:
         // to store the plan path (array of poses) from which the distance will be calculated

@@ -88,10 +88,10 @@ void PathLengthCalcNode::update()
                     std_msgs::Float64 path_length;
 
                     // set global plan
-                    path_length_calculator_.set_path(global_plan_);
+                    path_length_calculator_.setPath(global_plan_);
 
                     // calculate path length of global plan (array of poses)
-                    path_length.data = path_length_calculator_.compute_length();
+                    path_length.data = path_length_calculator_.computeLength();
 
                     if (path_length.data == -1)
                     {
