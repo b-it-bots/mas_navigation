@@ -33,13 +33,11 @@ PathLengthCalcNode::~PathLengthCalcNode()
 
 void PathLengthCalcNode::init()
 {
-    // initial message
-    ROS_INFO("Path length calculator node initialized...");
-
     // set initial member variables values
     callback_received_ = false;
     node_frequency_ = 0.0;
     global_plan_is_available_ = false;
+    ROS_INFO("Path length calculator node initialized...");
 }
 
 void PathLengthCalcNode::getParams()
