@@ -33,13 +33,13 @@ double PathLengthCalculator::computeLength()
     if (!is_plan_set_)
     {
         // plan not set
-        return -1;
+        return -1.0;
     }
 
     if (plan_.poses.size() == 0)
     {
         // empty plan received
-        return -1;
+        return -1.0;
     }
 
     double accumulated_sum = 0;
