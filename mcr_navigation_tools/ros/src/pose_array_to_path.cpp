@@ -35,7 +35,7 @@ void PoseArrayToPath::init()
     node_frequency_ = 0.0;
 }
 
-void PoseArrayToPath::get_params()
+void PoseArrayToPath::getParams()
 {
     // getting required parameters from parameter server
     nh_.param("node_frequency", node_frequency_, 10.0);
@@ -50,7 +50,7 @@ void PoseArrayToPath::poseArrayCallback(const geometry_msgs::PoseArray::ConstPtr
     pose_array_msg_ = *msg;
 }
 
-void PoseArrayToPath::main_loop()
+void PoseArrayToPath::update()
 {
     // setting the frequency at which the node will run
     ros::Rate loop_rate(node_frequency_);
@@ -106,10 +106,10 @@ int main(int argc, char **argv)
     pose_array_to_path_node.init();
 
     // get parameters
-    pose_array_to_path_node.get_params();
+    pose_array_to_path_node.getParams();
 
     // main loop function
-    pose_array_to_path_node.main_loop();
+    pose_array_to_path_node.update();
 
     return 0;
 }

@@ -25,13 +25,13 @@ class PoseArrayToPath
         void init();
 
         // get parameters from param server
-        void get_params();
+        void getParams();
 
         // callback to receive the pose array msg from ros network
         void poseArrayCallback(const geometry_msgs::PoseArray::ConstPtr& msg);
 
         // ros node main loop
-        void main_loop();
+        void update();
 
     private:
         // flag used to know when we have received a callback
