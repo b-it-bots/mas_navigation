@@ -27,12 +27,10 @@ PoseArrayToPath::~PoseArrayToPath()
 
 void PoseArrayToPath::init()
 {
-    // initial message
-    ROS_INFO("Pose array to path converter node initialized...");
-
     // set initial member variables values
     callback_received_ = false;
     node_frequency_ = 0.0;
+    ROS_INFO("Pose array to path converter node initialized...");
 }
 
 void PoseArrayToPath::getParams()
