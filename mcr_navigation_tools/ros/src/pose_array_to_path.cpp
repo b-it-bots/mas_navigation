@@ -59,6 +59,9 @@ void PoseArrayToPath::update()
 
     while (ros::ok())
     {
+        // listen to callbacks
+        ros::spinOnce();
+
         if (callback_received_)
         {
             // lower flag
@@ -83,9 +86,6 @@ void PoseArrayToPath::update()
             // publish path
             pub_.publish(path_msg);
         }
-
-        // listen to callbacks
-        ros::spinOnce();
 
         // sleep to control the node frequency
         loop_rate.sleep();
