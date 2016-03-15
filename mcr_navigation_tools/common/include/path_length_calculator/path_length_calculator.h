@@ -21,10 +21,10 @@ class PathLengthCalculator
     public:
         PathLengthCalculator();
 
-        explicit PathLengthCalculator(nav_msgs::Path plan);
+        explicit PathLengthCalculator(const nav_msgs::Path &plan);
 
         // to set the value of member variable plan_ from outside of the class
-        void set_path(nav_msgs::Path &plan);
+        void set_path(const nav_msgs::Path &plan);
 
         // to calculate the length of the path
         double compute_length();
