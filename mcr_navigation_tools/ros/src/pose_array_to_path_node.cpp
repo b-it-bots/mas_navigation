@@ -7,36 +7,28 @@
  * 
  */
 
-#include <mcr_navigation_tools/pose_array_to_path.h>
+#include <mcr_navigation_tools/pose_array_to_path_node.h>
 
-PoseArrayToPathNode::PoseArrayToPathNode() : nh_("~")
+PoseArrayToPathNode::PoseArrayToPathNode() : nh_("~"), is_pose_array_msg_received_(false)
 {
     // subscriptions
-    sub_ = nh_.subscribe("pose_array", 1, &PoseArrayToPathNode::poseArrayCallback, this);
+    sub_pose_array_msg_ = nh_.subscribe("pose_array", 1, &PoseArrayToPathNode::poseArrayCallback, this);
 
     // publications
-    pub_ = nh_.advertise<nav_msgs::Path>("path", 2);
+    pub_converted_path_ = nh_.advertise<nav_msgs::Path>("path", 1);
 }
 
 PoseArrayToPathNode::~PoseArrayToPathNode()
 {
-    // shut down publishers and subscribers
-    sub_.shutdown();
-    pub_.shutdown();
-}
-
-void PoseArrayToPathNode::init()
-{
-    // set initial member variables values
-    is_pose_array_received_ = false;
-    node_frequency_ = 0.0;
-    ROS_INFO("Pose array to path converter node initialized...");
+    // shut down subscribers and publishers
+    sub_pose_array_msg_.shutdown();
+    pub_converted_path_.shutdown();
 }
 
 void PoseArrayToPathNode::poseArrayCallback(const geometry_msgs::PoseArray::ConstPtr& msg)
 {
     pose_array_msg_ = *msg;
-    is_pose_array_received_ = true;
+    is_pose_array_msg_received_ = true;
 }
 
 void PoseArrayToPathNode::update()
@@ -44,35 +36,34 @@ void PoseArrayToPathNode::update()
     // listen to callbacks
     ros::spinOnce();
 
-    if (is_pose_array_received_)
+    if (!is_pose_array_msg_received_)
         return;
+
+    // to publish the pose array as path
+    nav_msgs::Path path_msg;
+    geometry_msgs::PoseStamped pose_stamped_msg;
+
+    // reset flag
+    is_pose_array_msg_received_ = false;
+
+    // republish pose array as path msg
+    path_msg.header = pose_array_msg_.header;
+    pose_stamped_msg.header = pose_array_msg_.header;
+
+    path_msg.poses.resize(pose_array_msg_.poses.size());
+
+    // loop over all array poses
+    for (int i = 0; i < pose_array_msg_.poses.size(); i++)
     {
-        // to publish the pose array as path
-        nav_msgs::Path path_msg;
-        geometry_msgs::PoseStamped pose_stamped_msg;
+        // create intermediate pose stamped
+        pose_stamped_msg.pose = pose_array_msg_.poses[i];
 
-        // lower flag
-        is_pose_array_received_ = false;
-
-        // republish pose array msg as path msg
-        path_msg.header = pose_array_msg_.header;
-        pose_stamped_msg.header = pose_array_msg_.header;
-
-        path_msg.poses.resize(pose_array_msg_.poses.size());
-
-        // loop over all pose arrary poses
-        for (int i = 0; i < pose_array_msg_.poses.size(); i++)
-        {
-            // create intermediate pose stamped
-            pose_stamped_msg.pose = pose_array_msg_.poses[i];
-
-            // append the last pose stamped to path
-            path_msg.poses[i] = pose_stamped_msg;
-        }
-
-        // publish path
-        pub_.publish(path_msg);
+        // append the last pose stamped to path
+        path_msg.poses[i] = pose_stamped_msg;
     }
+
+    // publish path
+    pub_converted_path_.publish(path_msg);
 }
 
 int main(int argc, char **argv)
