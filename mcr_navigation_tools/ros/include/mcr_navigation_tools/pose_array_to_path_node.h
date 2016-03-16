@@ -15,11 +15,11 @@
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseStamped.h>
 
-class PoseArrayToPath
+class PoseArrayToPathNode
 {
     public:
-        PoseArrayToPath();
-        ~PoseArrayToPath();
+        PoseArrayToPathNode();
+        ~PoseArrayToPathNode();
 
         // variable initialization function
         void init();
@@ -37,8 +37,8 @@ class PoseArrayToPath
         double node_frequency_;
 
     private:
-        // flag used to know when we have received a callback
-        bool callback_received_;
+        // goes up when poseArrayCallBack gets data
+        bool is_pose_array_received_;
 
         // ros related variables
         ros::NodeHandle nh_;

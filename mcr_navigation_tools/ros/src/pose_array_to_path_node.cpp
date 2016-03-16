@@ -9,58 +9,50 @@
 
 #include <mcr_navigation_tools/pose_array_to_path.h>
 
-PoseArrayToPath::PoseArrayToPath() : nh_("~")
+PoseArrayToPathNode::PoseArrayToPathNode() : nh_("~")
 {
     // subscriptions
-    sub_ = nh_.subscribe("pose_array", 1, &PoseArrayToPath::poseArrayCallback, this);
+    sub_ = nh_.subscribe("pose_array", 1, &PoseArrayToPathNode::poseArrayCallback, this);
 
     // publications
     pub_ = nh_.advertise<nav_msgs::Path>("path", 2);
 }
 
-PoseArrayToPath::~PoseArrayToPath()
+PoseArrayToPathNode::~PoseArrayToPathNode()
 {
     // shut down publishers and subscribers
     sub_.shutdown();
     pub_.shutdown();
 }
 
-void PoseArrayToPath::init()
+void PoseArrayToPathNode::init()
 {
     // set initial member variables values
-    callback_received_ = false;
+    is_pose_array_received_ = false;
     node_frequency_ = 0.0;
     ROS_INFO("Pose array to path converter node initialized...");
 }
 
-void PoseArrayToPath::getParams()
-{
-    // getting required parameters from parameter server
-    nh_.param("node_frequency", node_frequency_, 10.0);
-
-    // informing the user about the parameters which will be used
-    ROS_INFO("Node will run at : %lf [hz]", node_frequency_);
-}
-
-void PoseArrayToPath::poseArrayCallback(const geometry_msgs::PoseArray::ConstPtr& msg)
+void PoseArrayToPathNode::poseArrayCallback(const geometry_msgs::PoseArray::ConstPtr& msg)
 {
     pose_array_msg_ = *msg;
-    callback_received_ = true;
+    is_pose_array_received_ = true;
 }
 
-void PoseArrayToPath::update()
+void PoseArrayToPathNode::update()
 {
     // listen to callbacks
     ros::spinOnce();
 
-    if (callback_received_)
+    if (is_pose_array_received_)
+        return;
     {
         // to publish the pose array as path
         nav_msgs::Path path_msg;
         geometry_msgs::PoseStamped pose_stamped_msg;
 
         // lower flag
-        callback_received_ = false;
+        is_pose_array_received_ = false;
 
         // republish pose array msg as path msg
         path_msg.header = pose_array_msg_.header;
@@ -85,20 +77,21 @@ void PoseArrayToPath::update()
 
 int main(int argc, char **argv)
 {
-    // init node
     ros::init(argc, argv, "pose_array_to_path");
 
-    // create object of this node class
-    PoseArrayToPath pose_array_to_path_node;
+    ROS_INFO("Node is going to initialize...");
 
-    // initialize
-    pose_array_to_path_node.init();
+    // create object of the node class (PoseArrayToPathNode)
+    PoseArrayToPathNode pose_array_to_path_node;
 
-    // get parameters
-    pose_array_to_path_node.getParams();
+    // setup node frequency
+    double node_frequency = 10.0;
+    ros::NodeHandle nh("~");
+    nh.param("node_frequency", node_frequency, 10.0);
+    ROS_INFO("Node will run at : %lf [hz]", node_frequency);
+    ros::Rate loop_rate(node_frequency);
 
-    // setting the frequency at which the node will run
-    ros::Rate loop_rate(pose_array_to_path_node.node_frequency_);
+    ROS_INFO("Node initialized.");
 
     while (ros::ok())
     {
