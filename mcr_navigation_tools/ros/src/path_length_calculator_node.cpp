@@ -103,7 +103,7 @@ void PathLengthCalcNode::update()
         // publish even_out : "e_success"
         even_out_msg_.data = std::string("e_success");
         pub_event_out_.publish(even_out_msg_);
-        // std_msgs::Float64("e_success");
+
         ROS_INFO("Path length = %lf meters", path_length.data);
     }
 }
