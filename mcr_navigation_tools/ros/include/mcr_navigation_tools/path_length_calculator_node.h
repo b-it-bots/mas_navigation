@@ -24,12 +24,6 @@ class PathLengthCalcNode
         PathLengthCalcNode();
         ~PathLengthCalcNode();
 
-        // variable initialization function
-        void init();
-
-        // get parameters from param server
-        void getParams();
-
         // ros node main loop
         void update();
 
@@ -37,21 +31,18 @@ class PathLengthCalcNode
         void eventInCallback(const std_msgs::String::ConstPtr& msg);
 
         // callback to receive navigation path msg
-        void globalPlanCallback(const nav_msgs::Path::ConstPtr& msg);
-
-        // frequency at which the node will run
-        double node_frequency_;
+        void pathPlanCallback(const nav_msgs::Path::ConstPtr& msg);
 
     private:
         // flag used to know when we have received a callback
-        bool callback_received_;
+        bool is_event_in_received_;
 
         // ros related variables
         ros::NodeHandle nh_;
         ros::Publisher pub_event_out_;
-        ros::Publisher path_length_pub_;
+        ros::Publisher pub_path_length_;
         ros::Subscriber sub_event_in_;
-        ros::Subscriber global_plan_sub_;
+        ros::Subscriber sub_path_plan_;
 
         // for receiving event in msg
         std_msgs::String event_in_msg_;
@@ -63,9 +54,9 @@ class PathLengthCalcNode
         PathLengthCalculator path_length_calculator_;
 
         // stores the path received in the callback
-        nav_msgs::Path global_plan_;
+        nav_msgs::Path path_plan_;
 
         // flag to indicate that path msg was received from ros network
-        bool global_plan_is_available_;
+        bool is_global_plan_available_;
 };
 #endif  // MCR_NAVIGATION_TOOLS_PATH_LENGTH_CALCULATOR_NODE_H
