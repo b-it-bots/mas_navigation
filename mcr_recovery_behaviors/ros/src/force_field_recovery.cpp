@@ -123,6 +123,9 @@ void ForceFieldRecovery::moveBaseAwayFromObstacles(costmap_2d::Costmap2DROS* cos
     // reset number of oscillations_ on each recovery behavior call
     number_of_oscillations_ = 0;
 
+    // reset oscilation initialization en each recovery behavior call
+    is_oscillation_detection_initialized_ = false;
+
     // checkStoppingConditions(...) is the function in charge of breaking the loop
     while (!checkStoppingConditions(force_field, start_time))
     {
@@ -179,8 +182,8 @@ pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmapToPointcloud(const cos
             // getting each cost
             current_cost = costmap->getCost(i, j);
 
-            ROS_DEBUG("i, j = %d, %d : cost = %d ", i, j, current_cost);
-            ROS_DEBUG("costmap cost [%d][%d] = %d", i, j, current_cost);
+            //ROS_DEBUG("i, j = %d, %d : cost = %d ", i, j, current_cost);
+            //ROS_DEBUG("costmap cost [%d][%d] = %d", i, j, current_cost);
 
             // if cell is occupied by obstacle then add the centroid of the cell to the cloud
             if (current_cost == LETHAL_COST)
@@ -188,7 +191,7 @@ pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmapToPointcloud(const cos
                 // get world coordinates of current occupied cell
                 costmap->mapToWorld(i, j, world_x, world_y);
 
-                ROS_DEBUG("point %d, %d = %lf, %lf ", i , j , world_x, world_y);
+                //ROS_DEBUG("point %d, %d = %lf, %lf ", i , j , world_x, world_y);
 
                 // adding occupied cell centroid coordinates to cloud
                 cloud.push_back(pcl::PointXYZ(world_x, world_y, 0));
@@ -350,6 +353,9 @@ bool ForceFieldRecovery::checkStoppingConditions(Eigen::Vector3f &force_field,
 
 bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f &force_field)
 {
+    if(force_field(0) < 0.0001 && force_field(1) < 0.0001)
+                return false; // do not initialize nor compare if force_field is zero
+
     double current_angle = 0.0;
     double angle_difference = 0.0;
 
@@ -359,13 +365,13 @@ bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f &force_field)
         // get the new force field angle
         current_angle = atan2(force_field(1) , force_field(0));
 
-        ROS_DEBUG("previous angle : %lf", previous_angle_);
-        ROS_DEBUG("current angle : %lf", current_angle);
+        ROS_DEBUG("previous angle : %lf (deg)", previous_angle_ * 180.0 / 3.14159265);
+        ROS_DEBUG("current angle : %lf (deg)", current_angle * 180.0 / 3.14159265);
 
         // compare the angles
         angle_difference = atan2(sin(current_angle - previous_angle_), cos(current_angle - previous_angle_));
 
-        ROS_DEBUG("angle_difference = %lf", angle_difference);
+        ROS_INFO("angle_difference : %lf (deg)", angle_difference * 180.0 / 3.14159265);
 
         // detect if the force field angle has an abrupt angular change
         if (fabs(angle_difference) > oscillation_angular_tolerance_)
@@ -381,6 +387,11 @@ bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f &force_field)
     {
         // compute angle of the first force field
         previous_angle_ = atan2(force_field(1) , force_field(0));
+
+        ROS_DEBUG("force field initial x component : %lf (vel)", force_field(0));
+        ROS_DEBUG("force field initial y component : %lf (vel)", force_field(1));
+
+        ROS_DEBUG("initial angle : %lf", previous_angle_ * 180.0 / 3.14159265);
 
         // starting from second time, check for oscillations
         is_oscillation_detection_initialized_ = true;
