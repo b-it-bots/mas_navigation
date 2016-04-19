@@ -349,7 +349,7 @@ bool ForceFieldRecovery::checkStoppingConditions(Eigen::Vector3f &force_field,
 bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f &force_field)
 {
     if(force_field(0) < 0.0001 && force_field(1) < 0.0001)
-                return false; // do not initialize nor compare if force_field is zero
+        return false; // do not initialize nor compare if force_field is zero
 
     double current_angle = 0.0;
     double angle_difference = 0.0;
