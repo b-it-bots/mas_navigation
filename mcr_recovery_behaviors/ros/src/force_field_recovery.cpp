@@ -182,16 +182,11 @@ pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::costmapToPointcloud(const cos
             // getting each cost
             current_cost = costmap->getCost(i, j);
 
-            //ROS_DEBUG("i, j = %d, %d : cost = %d ", i, j, current_cost);
-            //ROS_DEBUG("costmap cost [%d][%d] = %d", i, j, current_cost);
-
             // if cell is occupied by obstacle then add the centroid of the cell to the cloud
             if (current_cost == LETHAL_COST)
             {
                 // get world coordinates of current occupied cell
                 costmap->mapToWorld(i, j, world_x, world_y);
-
-                //ROS_DEBUG("point %d, %d = %lf, %lf ", i , j , world_x, world_y);
 
                 // adding occupied cell centroid coordinates to cloud
                 cloud.push_back(pcl::PointXYZ(world_x, world_y, 0));
