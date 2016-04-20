@@ -5,6 +5,7 @@
 
 #include <force_field_recovery/force_field_recovery.h>
 #include <string>
+#include <limits>
 
 // Register this planner as a RecoveryBehavior plugin
 PLUGINLIB_DECLARE_CLASS(force_field_recovery, ForceFieldRecovery, force_field_recovery::ForceFieldRecovery,
@@ -348,8 +349,10 @@ bool ForceFieldRecovery::checkStoppingConditions(Eigen::Vector3f &force_field,
 
 bool ForceFieldRecovery::detectOscillations(Eigen::Vector3f &force_field)
 {
-    if(force_field(0) < 0.0001 && force_field(1) < 0.0001)
-        return false; // do not initialize nor compare if force_field is zero
+    // do not initialize nor compare if force_field is zero
+    if (std::abs(force_field(0)) < std::numeric_limits<double>::epsilon() &&
+        std::abs(force_field(1)) < std::numeric_limits<double>::epsilon())
+        return false;
 
     double current_angle = 0.0;
     double angle_difference = 0.0;
