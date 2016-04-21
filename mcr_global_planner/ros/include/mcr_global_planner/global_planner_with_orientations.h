@@ -1,5 +1,5 @@
-#ifndef _GLOBALPLANNERWITHORIENTATIONS_H
-#define _GLOBALPLANNERWITHORIENTATIONS_H
+#ifndef MCR_GLOBAL_PLANNER_GLOBAL_PLANNER_WITH_ORIENTATIONS_H
+#define MCR_GLOBAL_PLANNER_GLOBAL_PLANNER_WITH_ORIENTATIONS_H
 
 /********************************************************************
  * Copyright [2015] <Bonn-Rhein-Sieg University>
@@ -7,6 +7,8 @@
  *         torsten.jandt@smail.inf.h-brs.de
  *********************************************************************/
 
+#include <string>
+#include <vector>
 #include <global_planner/planner_core.h>
 
 namespace mcr_global_planner
@@ -77,8 +79,8 @@ class GlobalPlannerWithOrientations : public global_planner::GlobalPlanner
         bool makePlan(const geometry_msgs::PoseStamped &start, const geometry_msgs::PoseStamped &goal, double tolerance,
                       std::vector< geometry_msgs::PoseStamped > &plan);
 };
-}
+}  // namespace mcr_global_planner
 
-#endif
+#endif  // MCR_GLOBAL_PLANNER_GLOBAL_PLANNER_WITH_ORIENTATIONS_H
 
 
