@@ -11,6 +11,7 @@ find_package(catkin REQUIRED
     nav_msgs
     pluginlib
     roscpp
+    roslint
     tf
     global_planner
 )
@@ -49,6 +50,8 @@ add_dependencies(
   mcr_global_planner_with_orientations mcr_global_planner_with_orientations_gencfg
 )
 
+### TESTS
+roslint_cpp()
 
 install(TARGETS mcr_global_planner_with_orientations
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
