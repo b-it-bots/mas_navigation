@@ -5,7 +5,7 @@
  *         torsten.jandt@smail.inf.h-brs.de
  *********************************************************************/
 
-#include <mcr_global_planner_with_orientations/global_planner_with_orientations.h>
+#include <mcr_global_planner/global_planner_with_orientations.h>
 #include <geometry_msgs/PoseArray.h>
 #include <pluginlib/class_list_macros.h>
 

@@ -39,27 +39,26 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(
-    mcr_global_planner_with_orientations ros/src/mcr_global_planner_with_orientations/global_planner_with_orientations.cpp
+add_library(mcr_global_planner_with_orientations
+  ros/src/global_planner_with_orientations.cpp
 )
-target_link_libraries(
-  mcr_global_planner_with_orientations ${catkin_LIBRARIES}
+target_link_libraries(mcr_global_planner_with_orientations
+  ${catkin_LIBRARIES}
 )
 
-add_dependencies(
-  mcr_global_planner_with_orientations mcr_global_planner_with_orientations_gencfg
+add_dependencies(mcr_global_planner_with_orientations
+  mcr_global_planner_with_orientations_gencfg
 )
 
 ### TESTS
 roslint_cpp()
 
+### INSTALLLS
 install(TARGETS mcr_global_planner_with_orientations
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(DIRECTORY ros/include/mcr_global_planner_with_orientations
+install(DIRECTORY ros/include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
