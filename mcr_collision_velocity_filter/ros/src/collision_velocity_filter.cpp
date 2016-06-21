@@ -102,11 +102,8 @@ geometry_msgs::Twist CollisionVelocityFilter::calculateSafeBaseVelocities(const 
     velocity_direction = NO_MOTION;
 
     std::vector<bool> quadrants_with_point;
-    int number_of_quadrants_with_points;
 
     quadrants_with_point = quadrantsWithPoint(scans_as_pointcloud);
-    for (size_t j = 0; j < quadrants_with_point.size(); ++j)
-        number_of_quadrants_with_points += static_cast<int>(quadrants_with_point[j]);
 
     if (fabs(desired_twist.linear.x) >= min_linear_velocity_ || fabs(desired_twist.linear.y) >= min_linear_velocity_)
     {
