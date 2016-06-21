@@ -319,8 +319,8 @@ void CollisionVelocityFilterNode::update()
 
         // publish events
         double sum_desired = fabs(desired_twist_msg_.linear.x) + fabs(desired_twist_msg_.linear.y)
-            + fabs(desired_twist_msg_.angular.x);
-        double sum_safe = fabs(safe_twist_.linear.x) + fabs(safe_twist_.linear.y) + fabs(safe_twist_.angular.x);
+            + fabs(desired_twist_msg_.angular.z);
+        double sum_safe = fabs(safe_twist_.linear.x) + fabs(safe_twist_.linear.y) + fabs(safe_twist_.angular.z);
 
         if (sum_desired > 0.0 && sum_safe == 0.0)
         {
