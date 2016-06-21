@@ -341,10 +341,10 @@ std::vector<bool> CollisionVelocityFilter::quadrantsWithPoint(const pcl::PointCl
 {
     std::vector<bool> occupied_quadrants;
 
-    bool rear_right_occupied;
-    bool rear_left_occupied;
-    bool front_left_occupied;
-    bool front_right_occupied;
+    bool rear_right_occupied = false;
+    bool rear_left_occupied = false;
+    bool front_left_occupied = false;
+    bool front_right_occupied = false;
 
     pcl::PointCloud < pcl::PointXYZ > rear_right_cloud;
     pcl::PointCloud < pcl::PointXYZ > rear_left_cloud;
