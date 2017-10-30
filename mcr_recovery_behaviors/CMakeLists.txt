@@ -14,7 +14,7 @@ find_package(catkin REQUIRED
    roslint
 )
 
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 
 include_directories(
