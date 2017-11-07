@@ -1,14 +1,31 @@
 #!/usr/bin/python
 import roslaunch
 import rospy
-
+import rospkg
+import os
 
 if (__name__ == "__main__"):
+    #config
     package = 'map_server'
     executable = 'map_saver'
     node_name = 'map_saver_node'
-    node = roslaunch.core.Node(package=package, node_type=executable, name=node_name, args=" -f /home/jose/maps/jose")
+
+    #Ask for map name
+    map_name = raw_input("\nPlease enter new map name: ")
+
+    #GetPath
+    package_path = rospkg.RosPack().get_path('mcr_default_env_config')
+    #create directory
+    os.mkdir(package_path + "/" + map_name)
+
+    #Complete path
+    complete_path = package_path + "/" + map_name +"/map"
+    print "saving new map in " + complete_path
+
+    #Setup Node
+    node = roslaunch.core.Node(package=package, node_type=executable, name=node_name, args=" -f " + complete_path)
     launch = roslaunch.scriptapi.ROSLaunch()
+    #Start Node
     launch.start()
-    process = launch.launch(node)
+    #process = launch.launch(node)
     rospy.sleep(3)
