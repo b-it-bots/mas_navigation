@@ -45,6 +45,7 @@ roslint_cpp()
 install(PROGRAMS
   ros/scripts/navigation_goals_as_marker
   ros/scripts/save_base_map_poses_to_file
+  ros/scripts/map_saver
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
