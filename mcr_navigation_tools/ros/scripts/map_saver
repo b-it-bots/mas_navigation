@@ -2,11 +2,13 @@
 import roslaunch
 import rospy
 
-package = 'map_server'
-executable = 'map_saver'
-node_name = 'map_saver'
-node = roslaunch.core.Node(package=package, node_type=executable, name=node_name, args=" -f /home/jose/maps/jose")
-launch = roslaunch.scriptapi.ROSLaunch()
-launch.start()
-process = launch.launch(node)
-rospy.sleep(3)
+
+if (__name__ == "__main__"):
+    package = 'map_server'
+    executable = 'map_saver'
+    node_name = 'map_saver_node'
+    node = roslaunch.core.Node(package=package, node_type=executable, name=node_name, args=" -f /home/jose/maps/jose")
+    launch = roslaunch.scriptapi.ROSLaunch()
+    launch.start()
+    process = launch.launch(node)
+    rospy.sleep(3)
