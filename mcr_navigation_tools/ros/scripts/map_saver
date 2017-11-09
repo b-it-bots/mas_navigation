@@ -6,7 +6,7 @@ import os
 
 if (__name__ == "__main__"):
     #config
-    #rosrun <package> <executable> 
+    #rosrun <package> <executable>
     #node_name
     package = 'map_server'
     executable = 'map_saver'
@@ -21,12 +21,12 @@ if (__name__ == "__main__"):
     os.mkdir(package_path + "/" + map_name)
 
     #Complete path ...
-    #Saving map information as map.png and map.yaml 
-    destination_path = package_path + "/" + map_name +"/map"
+    #Saving map information as map.png and map.yaml
+    destination_path = package_path + "/" + map_name
     print "saving new map in " + complete_path
 
     #Setup Node
-    node = roslaunch.core.Node(package=package, node_type=executable, name=node_name, args=" -f " + destination_path)
+    node = roslaunch.core.Node(package=package, node_type=executable, name=node_name, args=" -f " + destination_path + "/map")
     launch = roslaunch.scriptapi.ROSLaunch()
     #Start Node
     launch.start()
