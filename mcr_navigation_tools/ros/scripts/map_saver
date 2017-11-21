@@ -23,7 +23,7 @@ if (__name__ == "__main__"):
     #Complete path ...
     #Saving map information as map.png and map.yaml
     destination_path = package_path + "/" + map_name
-    print "saving new map in " + complete_path
+    print "saving new map in " + destination_path
 
     #Setup Node
     node = roslaunch.core.Node(package=package, node_type=executable, name=node_name, args=" -f " + destination_path + "/map")
