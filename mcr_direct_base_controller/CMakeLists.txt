@@ -8,15 +8,21 @@ find_package(catkin REQUIRED
     rospy
     std_msgs
     mcr_monitoring_msgs
+    dynamic_reconfigure
 )
 
 catkin_python_setup()
+
+generate_dynamic_reconfigure_options(
+  ros/config/DirectBaseController.cfg
+)
 
 catkin_package(
   CATKIN_DEPENDS
     geometry_msgs
     rospy
     std_msgs
+    dynamic_reconfigure
     mcr_monitoring_msgs
     mcr_geometric_relation_monitors
     mcr_common_converters
@@ -38,6 +44,10 @@ install(PROGRAMS
 
 install(DIRECTORY ros/launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
+)
+
+install(DIRECTORY ros/config
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/config
 )
 
 ### TESTS
