@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>mas_navigation</name>
+  <version>0.0.1</version>
+  <description>navigation meta package</description>
+
+  <maintainer email="robotics@mail.inf.h-brs.de">MAS Robotics</maintainer>
+  
+  <license>GPLv3</license>
+
+  <author email="frederik.hegger@h-brs.de">Frederik Hegger</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>

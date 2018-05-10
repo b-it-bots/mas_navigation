@@ -1,4 +1,4 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mcr_navigation)
+project(mas_navigation)
 find_package(catkin REQUIRED)
 catkin_metapackage()
