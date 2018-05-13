@@ -7,9 +7,15 @@
     moves the mobile base in Cartesian space until a pose is reached.
   </description>
 
-  <maintainer email="shehzad.ahmed@smail.inf.h-brs.de">Shehzad Ahmed</maintainer>
+  <author email="jose.sanchez.loza@gmail.com">Jose Sanchez</author>
+  <author email="aaqib.mohammed@smail.inf.h-brs.de">Aaqib Parvez Mohammad</author>
+  <author email="ramit.sharma@smail.inf.h-brs.de">Ramit Sharma</author>
+  <author email="pranjal.dhole@smail.inf.h-brs.de">Pranjal Dhole</author>
+  <author email="md.zahiduzzaman@smail.inf.h-brs.de">Md Zahiduzzaman</author>
 
-  <author email="santosh.thoduka@smail.inf.h-brs.de">Santosh Thoduka</author>
+
+  <maintainer email="santosh.thoduka@h-brs.de">Santosh Thoduka</maintainer>
+  <maintainer email="deebul.nair@h-brs.de">Deebul Nair</maintainer>
 
   <license>GPLv3</license>
 
