@@ -7,9 +7,15 @@
     moves the mobile base in Cartesian space until a pose is reached.
   </description>
 
-  <maintainer email="shehzad.ahmed@smail.inf.h-brs.de">Shehzad Ahmed</maintainer>
+  <author email="jose.sanchez.loza@gmail.com">Jose Sanchez</author>
+  <author email="aaqib.mohammed@smail.inf.h-brs.de">Aaqib Parvez Mohammad</author>
+  <author email="ramit.sharma@smail.inf.h-brs.de">Ramit Sharma</author>
+  <author email="pranjal.dhole@smail.inf.h-brs.de">Pranjal Dhole</author>
+  <author email="md.zahiduzzaman@smail.inf.h-brs.de">Md Zahiduzzaman</author>
 
-  <author email="santosh.thoduka@smail.inf.h-brs.de">Santosh Thoduka</author>
+
+  <maintainer email="santosh.thoduka@h-brs.de">Santosh Thoduka</maintainer>
+  <maintainer email="deebul.nair@h-brs.de">Deebul Nair</maintainer>
 
   <license>GPLv3</license>
 
@@ -20,8 +26,9 @@
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>mcr_monitoring_msgs</build_depend>
-  
-  
+  <build_depend>dynamic_reconfigure</build_depend>
+
+
   <run_depend>rospy</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
@@ -32,6 +39,7 @@
   <run_depend>mcr_twist_limiter</run_depend>
   <run_depend>mcr_twist_synchronizer</run_depend>
   <run_depend>mcr_manipulation_measurers</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
 
   <test_depend>roslaunch</test_depend>
   <test_depend>rostest</test_depend>
