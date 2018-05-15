@@ -3,7 +3,7 @@
     <arg name="cmd_vel_out" default="/cmd_vel" />
     <group ns="mcr_navigation/direct_base_controller">
         <node pkg="mcr_direct_base_controller" type="direct_base_controller_coordinator_node" name="coordinator" output="screen">
-            <remap from="~pose_2" to="/mcr_navigation/direct_base_controller/input_pose" />
+            <remap from="~target_pose" to="/mcr_navigation/direct_base_controller/input_pose" />
             <remap from="~twist" to="$(arg cmd_vel_out)" />
 
             <!-- the cycle rate of the node (in Hz) in RUNNING mode -->
