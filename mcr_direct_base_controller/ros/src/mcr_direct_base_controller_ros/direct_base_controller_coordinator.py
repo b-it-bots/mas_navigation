@@ -28,7 +28,7 @@ class DirectBaseControllerCoordinator(object):
     def __init__(self):
         # params
         self.event = None
-        self.pose_2 = None
+        self.target_pose = None
         self.collision_filter_feedback = None
 
         self.component_wise_pose_error_calculator = ComponentWisePoseErrorCalculator()
@@ -57,7 +57,7 @@ class DirectBaseControllerCoordinator(object):
 
         # subscribers
         rospy.Subscriber("~event_in", std_msgs.msg.String, self.event_in_cb)
-        rospy.Subscriber('~pose_2', geometry_msgs.msg.PoseStamped, self.pose_2_cb)
+        rospy.Subscriber('~target_pose', geometry_msgs.msg.PoseStamped, self.target_pose_cb)
 
         if self.use_collision_avoidance:
             rospy.Subscriber("/mcr_navigation/collision_velocity_filter/event_out", std_msgs.msg.String,
@@ -70,12 +70,12 @@ class DirectBaseControllerCoordinator(object):
         """
         self.event = msg.data
 
-    def pose_2_cb(self, msg):
+    def target_pose_cb(self, msg):
         """
-        Obtains the second pose.
+        Obtains the target pose.
 
         """
-        self.pose_2 = msg
+        self.target_pose = msg
 
     def collision_filter_cb(self, msg):
         """
@@ -145,7 +145,7 @@ class DirectBaseControllerCoordinator(object):
         origin_pose.header.frame_id = self.base_frame
         origin_pose.pose.orientation.w = 1.0
 
-        pose_error = self.component_wise_pose_error_calculator.get_component_wise_pose_error(origin_pose, self.pose_2)
+        pose_error = self.component_wise_pose_error_calculator.get_component_wise_pose_error(origin_pose, self.target_pose)
         if not pose_error:
             self.event_out.publish('e_success')
             self.publish_zero_velocities()
