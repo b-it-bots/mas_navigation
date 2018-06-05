@@ -59,9 +59,8 @@ class DirectBaseControllerCoordinator(object):
         rospy.Subscriber("~event_in", std_msgs.msg.String, self.event_in_cb)
         rospy.Subscriber('~target_pose', geometry_msgs.msg.PoseStamped, self.target_pose_cb)
 
-        if self.use_collision_avoidance:
-            rospy.Subscriber("/mcr_navigation/collision_velocity_filter/event_out", std_msgs.msg.String,
-                             self.collision_filter_cb)
+        rospy.Subscriber("/mcr_navigation/laser_distances/distances", std_msgs.msg.Float32MultiArray,
+                         self.laser_distances_cb)
 
     def event_in_cb(self, msg):
         """
@@ -82,6 +81,12 @@ class DirectBaseControllerCoordinator(object):
         Obtains collision velocity filter feedback.
         """
         self.collision_filter_feedback = msg.data
+
+    def laser_distances_cb(self, msg):
+        """
+        Obtains laser distances in front, right, rear, left
+        """
+        self.laser_distances = msg.data
 
     def start(self):
         """
@@ -145,23 +150,40 @@ class DirectBaseControllerCoordinator(object):
         origin_pose.header.frame_id = self.base_frame
         origin_pose.pose.orientation.w = 1.0
 
-        pose_error = self.component_wise_pose_error_calculator.get_component_wise_pose_error(origin_pose, self.target_pose)
+        pose_error = self.component_wise_pose_error_calculator.get_component_wise_pose_error(origin_pose,
+                                                                                             self.target_pose)
         if not pose_error:
             self.event_out.publish('e_success')
             self.publish_zero_velocities()
             return 'INIT'
+
+        if self.use_collision_avoidance:
+            # front
+            if (self.laser_distances[0] < self.front_laser_threshold and
+                    pose_error.linear.x > 0.0):
+                rospy.logwarn("Front laser distance within threshold")
+                pose_error.linear.x = 0.0
+            # right
+            if (self.laser_distances[1] < self.right_laser_threshold and
+                    pose_error.linear.y < 0.0):
+                rospy.logwarn("Right laser distance within threshold")
+                pose_error.linear.y = 0.0
+            # rear
+            if (self.laser_distances[2] < self.rear_laser_threshold and
+                    pose_error.linear.x < 0.0):
+                rospy.logwarn("Rear laser distance within threshold")
+                pose_error.linear.x = 0.0
+            # left
+            if (self.laser_distances[3] < self.left_laser_threshold and
+                    pose_error.linear.y > 0.0):
+                rospy.logwarn("Left laser distance within threshold")
+                pose_error.linear.y = 0.0
 
         if self.component_wise_pose_error_monitor.isComponentWisePoseErrorWithinThreshold(pose_error):
             self.event_out.publish('e_success')
             self.publish_zero_velocities()
             return 'INIT'
         else:
-            if self.use_collision_avoidance and \
-                        (self.collision_filter_feedback == "e_zero_velocities_forwarded"):
-                self.event_out.publish('e_failure')
-                self.publish_zero_velocities()
-                return 'INIT'
-
             cartesian_velocity = self.twist_controller.get_cartesian_velocity(pose_error)
             if cartesian_velocity:
                 limited_twist = self.twist_limiter.get_limited_twist(cartesian_velocity)
@@ -210,6 +232,11 @@ class DirectBaseControllerCoordinator(object):
                                           config.max_velocity_pitch)
         self.twist_synchronizer.set_angular_synchronization(config.angular_synchronization)
         self.loop_rate = rospy.Rate(config.loop_rate)
+        self.use_collision_avoidance = config.use_collision_avoidance
+        self.front_laser_threshold = config.front_laser_threshold
+        self.right_laser_threshold = config.right_laser_threshold
+        self.rear_laser_threshold = config.rear_laser_threshold
+        self.left_laser_threshold = config.left_laser_threshold
         return config
 
 
