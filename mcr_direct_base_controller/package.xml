@@ -39,6 +39,7 @@
   <run_depend>mcr_twist_limiter</run_depend>
   <run_depend>mcr_twist_synchronizer</run_depend>
   <run_depend>mcr_manipulation_measurers</run_depend>
+  <run_depend>mcr_navigation_tools</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
 
   <test_depend>roslaunch</test_depend>
