@@ -70,3 +70,13 @@ This package provides different nodes which provides additional features related
 The map name is introduced on the commandline once the script is running.
 
 
+## Laser distances
+
+### Parameters
+* "footprint": rectangular footprint of the robot
+
+### Subscribed Topics
+* "scan_front" and "scan_rear": laser scan topics
+
+### Published Topics
+* "distances": Minimum distance from footprint to obstacle in the front, right, rear and left directions (in that order)
