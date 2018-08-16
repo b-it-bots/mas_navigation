@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+    <node pkg="mdr_pose_visualiser" name="pose_visualiser" type="pose_visualiser" output="screen">
+        <param name="pose_frame" value="map" />
+        <param name="pose_description_file" value="$(find mcr_default_env_config)/$(arg robot_env)/navigation_goals.yaml" />
+    </node>
+</launch>

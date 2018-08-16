@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+
+import yaml
+import rospy
+import tf
+from std_msgs.msg import ColorRGBA
+from geometry_msgs.msg import Vector3, Quaternion
+from visualization_msgs.msg import MarkerArray, Marker
+
+class PoseVisualiser(object):
+    def __init__(self):
+        self.pose_frame = rospy.get_param('~pose_frame', 'map')
+        self.pose_description_file = rospy.get_param('~pose_description_file', '')
+        self.pose_publisher = rospy.Publisher('poses', MarkerArray,
+                                              queue_size=5, latch=True)
+        self.pose_text_publisher = rospy.Publisher('pose_text', MarkerArray,
+                                                   queue_size=5, latch=True)
+        poses = self.load_poses()
+        marker_array_arrow = MarkerArray()
+        marker_array_text = MarkerArray()
+        marker_count = 1
+        for pose_name, pose in poses.items():
+            # arrow marker
+            marker_msg_arrow = Marker()
+            marker_msg_arrow.id = marker_count
+            marker_msg_arrow.header.frame_id = self.pose_frame
+            marker_msg_arrow.header.stamp = rospy.Time.now()
+            marker_msg_arrow.type = Marker.ARROW
+            marker_msg_arrow.text = pose_name
+            marker_msg_arrow.scale = Vector3(0.3, 0.05, 0.1)
+            marker_msg_arrow.color = ColorRGBA(1., 0., 0., 1.)
+            marker_msg_arrow.pose.position.x = pose[0]
+            marker_msg_arrow.pose.position.y = pose[1]
+
+            quat = tf.transformations.quaternion_from_euler(0, 0, pose[2])
+            marker_msg_arrow.pose.orientation = Quaternion(*quat)
+            marker_array_arrow.markers.append(marker_msg_arrow)
+
+            # text marker
+            marker_msg_text = Marker()
+            marker_msg_text.id = marker_count
+            marker_msg_text.header.frame_id = self.pose_frame
+            marker_msg_text.header.stamp = rospy.Time.now()
+            marker_msg_text.type = Marker.TEXT_VIEW_FACING
+            marker_msg_text.text = pose_name
+            marker_msg_text.scale = Vector3(0.3, 0.05, 0.1)
+            marker_msg_text.color = ColorRGBA(0., 0., 1., 1.)
+            marker_msg_text.pose.position.x = pose[0]
+            marker_msg_text.pose.position.y = pose[1]
+
+            marker_array_text.markers.append(marker_msg_text)
+            marker_count += 1
+        self.pose_publisher.publish(marker_array_arrow)
+        self.pose_text_publisher.publish(marker_array_text)
+
+    def load_poses(self):
+        stream = file(self.pose_description_file, 'r')
+        poses = yaml.load(stream)
+        stream.close()
+        return poses
+
+if __name__ == '__main__':
+    rospy.init_node('pose_visualiser')
+    PoseVisualiser()
+    rospy.spin()
