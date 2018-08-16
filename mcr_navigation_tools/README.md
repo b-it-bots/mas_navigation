@@ -4,17 +4,23 @@
 
 This package provides different nodes which provides additional features related for navigation.
 
-## navigation_goals_as_markers_node
+## pose_visualiser
 
 ### Scripts
-1. navigation_goals_as_marker: Publish a Marker topic with navigation_goals poses file.
+
+* `pose_visualiser`:
+    1. reads poses from a navigation goals yaml file in which poses are represented as `<NAME>: [x, y, theta]` pairs and
+    2. publishes two marker arrays: one array with arrow markers and another one with text markers
 
 ### Published Topic
 
-* /visualization_marker_array : MarkerArray Topic
+* `/poses`: visualization_msgs.MarkerArray
+* `/pose_text`: visualization_msgs.MarkerArray
 
 ### Launch Files
-1. navigationn_goals_as_marker.launch: Launch file for navigation_goals_as_marker node.
+1. `pose_visualiser.launch`: Launch file for the `pose_visualiser` node. Two parameters can be specified in the launch file:
+    * `pose_frame`: Frame in which the poses should be published
+    * `pose_description_file`: Absolute path to a yaml file in which poses are represented as `<NAME>: [x, y, theta]` pairs
 
 ## path_length_calculator_node
 
@@ -48,7 +54,7 @@ This package provides different nodes which provides additional features related
 
 ## Arguments
 
-* The default created file is named "navigation_goals.yaml". If a name is provided as an argument, then file name is <provided_name>.yaml 
+* The default created file is named "navigation_goals.yaml". If a name is provided as an argument, then file name is <provided_name>.yaml
 
 ### Parameters
 * node_frequency: Frecuency of node
@@ -65,7 +71,7 @@ This package provides different nodes which provides additional features related
 
 1. map_saver: Stores a map on the path of the package mcr_default_env_config using the node map_saver from map_server package.
 
-### Arguments 
+### Arguments
 
 The map name is introduced on the commandline once the script is running.
 
