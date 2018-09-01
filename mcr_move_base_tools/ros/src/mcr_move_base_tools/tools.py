@@ -6,7 +6,7 @@ import re
 import rospkg
 
 class PlannerUpdater:
-    def __init__(navigation_server = "/move_base/", config_package = "mdr_2dnav"):
+    def __init__(self, navigation_server = "/move_base/", config_package = "mdr_2dnav"):
 
         rospy.init_node("dynamic_reconfigure_planners")
         self.navigation_server = navigation_server
@@ -14,10 +14,10 @@ class PlannerUpdater:
         self.dyn_client = Client(navigation_server, None)
 
         if not rospy.has_param(navigation_server + "base_global_planner"):
-            return False
+            return
 
         if not rospy.has_param(navigation_server + "base_local_planner"):
-            return False
+            return
 
         #Getting Data of current planners
         #For Global Planner
@@ -83,39 +83,38 @@ class PlannerUpdater:
             if n_t[2] == "nav_core::BaseLocalPlanner":
                 self.available_local_planners.append(n_t[0])
 
+    def get_available_global_planners(self):
+        return self.available_global_planners
 
-        def getAvailableGlobalPlanners(self):
-            return self.available_global_planners
+    def get_available_local_planners(self):
+        return self.available_local_planners
 
-        def getAvailableLocalPlanners(self):
-            return self.available_local_planners
+    def delete_old_params(self):
+        rospy.logwarn("Deleting Old Params")
+        current_planners = [self.current_global_planner_name,
+                            self.current_local_planner_name]
 
-        def deleteOldParams(self):
-            rospy.logwarn("Deleting Old Params")
-            current_planners = [self.current_global_planner_name,
-                                self.current_local_planner_name]
+        for planner in current_planners:
+            ns = self.navigation_server + planner
+            old_parameters = rosparam.get_param(ns)
+            for param in old_parameters:
+                rosparam.delete_param(ns+'/'+param)
 
-            for planner in current_planners:
-                ns = self.navigation_server + planner
-                old_parameters = rosparam.get_param(ns)
-                for param in old_parameters:
-                    rosparam.delete_param(ns+'/'+param)
+    def add_new_params(self, new_namespace):
+        rospy.loginfo("Adding New Params")
+        param_file = self.config_path+'/'+ new_namespace + '.yaml'
+        new_config_file = rosparam.load_file(param_file)
 
-        def addNewParams(self, new_namespace):
-            rospy.loginfo("Adding New Params")
-            param_file = self.config_path+'/'+ new_namespace + '.yaml'
-            new_config_file = rosparam.load_file(param_file)
+        for params,ns in new_config_file:
+            print ns, params
+            rosparam.upload_params(navigation_server + ns,params)
 
-            for params,ns in new_config_file:
-                print ns, params
-                rosparam.upload_params(navigation_server + ns,params)
+    def update_planners(self, new_config, new_global_planner_ns=None, new_local_planner_ns=None):
+        if new_global_planner_ns is not None:
+            self.delete_old_params(self.current_global_planner_name)
+            self.add_new_params(new_global_planner_ns)
+        if new_local_planner_ns is not None:
+            self.delete_old_params(self.current_local_planner_name)
+            self.add_new_params(new_locbal_planner_ns)
 
-        def updatePlanner(self, new_global_planner_ns=None, new_local_planner_ns=None, new_config):
-            if new_global_planner_ns is not None:
-                planner_updater.deleteOldParams(self.current_global_planner_name)
-                planner_updater.addNewParams(new_global_planner_ns)
-            if new_local_planner_ns is not None:
-                planner_updater.deleteOldParams(self.current_local_planner_name)
-                planner_updater.addNewParams(new_locbal_planner_ns)
-
-            self.dyn_client.update_configuration(new_config)
+        self.dyn_client.update_configuration(new_config)
