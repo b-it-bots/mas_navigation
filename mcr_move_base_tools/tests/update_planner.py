@@ -10,7 +10,7 @@ new_config["base_local_planner"] = "Error"
 
 print "Select Your Global Planner"
 
-available_g_planners = planner_updater.getAvailableGlobalPlanners()
+available_g_planners = planner_updater.get_available_global_planners()
 
 for i in range(len(available_g_planners)):
     print "Available GP ", i , available_g_planners[i]
@@ -19,7 +19,7 @@ new_config["base_global_planner"] = available_g_planners[int(raw_input('Choose a
 
 print "Select Your Local Planner"
 
-available_l_planners = planner_updater.getAvailableLocalPlanners()
+available_l_planners = planner_updater.get_available_local_planners()
 
 for i in range(len(available_l_planners)):
     print "Available LP ", i , available_l_planners[i]
@@ -30,4 +30,4 @@ global_planner_ns = new_config["base_global_planner"].split('/')[0]
 
 local_planner_ns = new_config["base_local_planner"].split('/')[0]
 
-planner_updater.updatePlanner(new_config, new_global_planner_ns=global_planner_ns, new_local_planner_ns=local_planner_ns)
+planner_updater.update_planners(new_config, new_global_planner_ns=global_planner_ns, new_local_planner_ns=local_planner_ns)
