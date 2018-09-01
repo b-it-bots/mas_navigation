@@ -32,7 +32,7 @@ class PlannerUpdater:
 
         #TODO Maybe not needed if config files are added
         rospack = rospkg.RosPack()
-        config_path = rospack.get_path(config_package)
+        self.config_path = rospack.get_path(config_package)
 
         #Get planners information running rospack plugin on terminal/ Retunr Name/plugin path
         plugins = os.popen("rospack plugins --attrib=plugin nav_core").read()
@@ -90,7 +90,7 @@ class PlannerUpdater:
         def getAvailableLocalPlanners(self):
             return self.available_local_planners
 
-        def deleteOldParams(self, ):
+        def deleteOldParams(self):
             rospy.logwarn("Deleting Old Params")
             current_planners = [self.current_global_planner_name,
                                 self.current_local_planner_name]
@@ -100,3 +100,22 @@ class PlannerUpdater:
                 old_parameters = rosparam.get_param(ns)
                 for param in old_parameters:
                     rosparam.delete_param(ns+'/'+param)
+
+        def addNewParams(self, new_namespace):
+            rospy.loginfo("Adding New Params")
+            param_file = self.config_path+'/'+ new_namespace + '.yaml'
+            new_config_file = rosparam.load_file(param_file)
+
+            for params,ns in new_config_file:
+                print ns, params
+                rosparam.upload_params(navigation_server + ns,params)
+
+        def updatePlanner(self, new_global_planner_ns=None, new_local_planner_ns=None, new_config):
+            if new_global_planner_ns is not None:
+                planner_updater.deleteOldParams(self.current_global_planner_name)
+                planner_updater.addNewParams(new_global_planner_ns)
+            if new_local_planner_ns is not None:
+                planner_updater.deleteOldParams(self.current_local_planner_name)
+                planner_updater.addNewParams(new_locbal_planner_ns)
+
+            self.dyn_client.update_configuration(new_config)
