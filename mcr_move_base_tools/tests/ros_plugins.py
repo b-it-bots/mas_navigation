@@ -1,65 +1,8 @@
 import os
 from dynamic_reconfigure.client import Client
-import rospy
-import rosparam
-import re
-import rospkg
+from mcr_move_base_tools.tools import PlannerUpdater
 
-rospy.init_node("dynamic_reconfigure_planners")
-
-navigation_server = "/move_base/"
-config_package = "mdr_2dnav"
-
-dyn_client = Client(navigation_server, None)
-
-current_global_planner = rosparam.get_param(navigation_server + "base_global_planner")
-current_global_planner_ns = current_global_planner.split('/')[0]
-current_global_planner_name = current_global_planner.split('/')[1]
-current_local_planner = rosparam.get_param(navigation_server + "base_local_planner")
-current_local_planner_ns = current_local_planner.split('/')[0]
-current_local_planner_name = current_local_planner.split('/')[1]
-
-rospack = rospkg.RosPack()
-config_path = rospack.get_path(config_package)
-
-plugins = os.popen("rospack plugins --attrib=plugin nav_core").read()
-plugins = plugins.splitlines()
-plugin_name_type = list()
-
-for i in plugins:
-    j = i.split()
-    c_file = open(j[1],"r")
-    flags = [False,False,False]
-    for line in c_file:
-        index_name = line.find("name")
-        index_type = line.find("type")
-        base_class_index = line.find("base_class_type")
-
-        if index_name > 0 and not flags[0]:
-            name = re.findall(r'"(.*?)"', line[index_name:])[0]
-            flags[0] = True
-        if index_type>0 and not flags[1]:
-            plugin_type = re.findall(r'"(.*?)"', line[index_type:])[0]
-            flags[1] = True
-        if base_class_index > 0 and not flags[2]:
-            plugin_base_type = re.findall(r'"(.*?)"', line[base_class_index:])[0]
-            flags[2] = True
-
-        if all(flags):
-            plugin_name_type.append([name, plugin_type, plugin_base_type])
-            flags = [False,False,False]
-
-available_global_planners = list()
-available_local_planners = list()
-
-for n_t in plugin_name_type:
-    print n_t[0], n_t[2]
-    if n_t[2] == "nav_core::BaseGlobalPlanner":
-        available_global_planners.append(n_t[0])
-
-    if n_t[2] == "nav_core::BaseLocalPlanner":
-        available_local_planners.append(n_t[0])
-
+planner_updater = PlannerUpdater()
 
 new_config = dict()
 new_config["base_global_planner"] = "Error"
@@ -67,34 +10,26 @@ new_config["base_local_planner"] = "Error"
 
 print "Select Your Global Planner"
 
-for i in range(len(available_global_planners)):
-    print "Available GP ", i , available_global_planners[i]
+available_g_planners = planner_updater.getAvailableGlobalPlanners()
 
-new_config["base_global_planner"] = available_global_planners[int(raw_input('Choose a number: '))]
+for i in range(len(available_g_planners)):
+    print "Available GP ", i , available_g_planners[i]
+
+new_config["base_global_planner"] = available_g_planners[int(raw_input('Choose a number: '))]
 
 print "Select Your Local Planner"
 
-for i in range(len(available_local_planners)):
-    print "Available LP ", i , available_local_planners[i]
+available_l_planners = planner_updater.getAvailableLocalPlanners()
 
-new_config["base_local_planner"] = available_local_planners[int(raw_input('Choose a number: '))]
+for i in range(len(available_l_planners)):
+    print "Available LP ", i , available_l_planners[i]
 
-print "DELETING OLD GLOBAL PARAMS"
+new_config["base_local_planner"] = available_l_planners[int(raw_input('Choose a number: '))]
 
-ns = navigation_server + current_global_planner_name
-old_parameters = rosparam.get_param(ns)
-
-for param in old_parameters:
-    rosparam.delete_param(ns+'/'+param)
+planner_updater.deleteOldParams()
 
 
-print "DELETING OLD LOCAL PARAMS"
-
-ns = navigation_server + current_local_planner_name
-old_parameters = rosparam.get_param(ns)
-
-for param in old_parameters:
-    rosparam.delete_param(ns+'/'+param)
+#TODO FROM HERE ON
 
 print "LOADING NEW PARAMS GLOBAL PLANNER"
 
