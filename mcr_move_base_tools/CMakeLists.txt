@@ -4,19 +4,28 @@ project(mcr_move_base_tools)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   dynamic_reconfigure
+  message_generation
 )
 
 catkin_python_setup()
 
+add_service_files(
+   DIRECTORY srv
+)
+
+generate_messages()
+
 catkin_package(
  CATKIN_DEPENDS
    rospy
+   std_msgs
    dynamic_reconfigure
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
 
 #install(PROGRAMS
   #ros/scripts

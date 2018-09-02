@@ -74,8 +74,7 @@ class PlannerUpdater:
         self.available_global_planners = list()
         self.available_local_planners = list()
 
-
-        #Where just interested on Global and Local planners
+        #We are just interested on Global and Local planners
         #Recovery Behaviors are ignored
         for n_t in plugin_name_type:
             if n_t[2] == "nav_core::BaseGlobalPlanner":
