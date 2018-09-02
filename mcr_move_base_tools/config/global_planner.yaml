@@ -1,0 +1,9 @@
+GlobalPlanner:
+  use_grid_path: False            # default : False
+  use_dijkstra: True              # default : True
+  allow_unknown: False            # default : False
+  default_tolerance: 0.0          # default : 0.0
+  visualize_potential: True       # default : True
+  use_quadratic: True             # default : True
+  use_grid_path: False            # default : False
+  old_navfn_behavior: False       # default : False
