@@ -14,10 +14,12 @@ class PlannerUpdater:
         self.dyn_client = Client(navigation_server, None)
 
         if not rospy.has_param(navigation_server + "base_global_planner"):
-            return
+            rospy.logerr("Base Global Planner Param not found")
+            raise ValueError('Empty Global Planner ROS Param')
 
         if not rospy.has_param(navigation_server + "base_local_planner"):
-            return
+            rospy.logerr("Base Local Planner Param not found")
+            raise ValueError('Empty Local Planner ROS Param')
 
         #Getting Data of current planners
         #For Global Planner
