@@ -6,7 +6,7 @@ import re
 import rospkg
 
 class PlannerUpdater:
-    def __init__(self, navigation_server = "/move_base/", config_package = "mcr_move_base_tools", config_folder="config"):
+    def __init__(self, navigation_server = "/move_base/", config_package = "mcr_move_base_tools", config_folder="config", mode_selector=True):
 
         rospy.init_node("dynamic_reconfigure_planners")
         self.navigation_server = navigation_server
@@ -83,6 +83,12 @@ class PlannerUpdater:
 
             if n_t[2] == "nav_core::BaseLocalPlanner":
                 self.available_local_planners.append(n_t[0])
+
+        if mode_selector:
+            self.load_modes()
+
+    def load_modes(self):
+        pass
 
     def get_available_global_planners(self):
         return self.available_global_planners

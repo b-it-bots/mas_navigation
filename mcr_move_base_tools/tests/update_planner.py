@@ -2,7 +2,7 @@ import os
 from dynamic_reconfigure.client import Client
 from mcr_move_base_tools.tools import PlannerUpdater
 
-planner_updater = PlannerUpdater()
+planner_updater = PlannerUpdater(mode_selector=False)
 
 new_config = dict()
 new_config["base_global_planner"] = "Error"
