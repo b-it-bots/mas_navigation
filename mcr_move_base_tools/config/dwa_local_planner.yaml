@@ -48,4 +48,3 @@ DWALocalPlanner:
   trans_stopped_vel: 0.01             # default : 0.01
 
   penalize_negative_x: true           # default : false
-
