@@ -76,7 +76,6 @@ class PlannerUpdater:
         #Where just interested on Global and Local planners
         #Recovery Behaviors are ignored
         for n_t in plugin_name_type:
-            print n_t[0], n_t[2]
             if n_t[2] == "nav_core::BaseGlobalPlanner":
                 self.available_global_planners.append(n_t[0])
 
@@ -89,16 +88,13 @@ class PlannerUpdater:
     def get_available_local_planners(self):
         return self.available_local_planners
 
-    def delete_old_params(self):
+    def delete_old_params(self, planner):
         rospy.logwarn("Deleting Old Params")
-        current_planners = [self.current_global_planner_name,
-                            self.current_local_planner_name]
 
-        for planner in current_planners:
-            ns = self.navigation_server + planner
-            old_parameters = rosparam.get_param(ns)
-            for param in old_parameters:
-                rosparam.delete_param(ns+'/'+param)
+        ns = self.navigation_server + planner
+        old_parameters = rosparam.get_param(ns)
+        for param in old_parameters:
+            rosparam.delete_param(ns+'/'+param)
 
     def add_new_params(self, new_namespace):
         rospy.loginfo("Adding New Params")
