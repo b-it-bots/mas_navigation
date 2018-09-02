@@ -6,7 +6,7 @@ import re
 import rospkg
 
 class PlannerUpdater:
-    def __init__(self, navigation_server = "/move_base/", config_package = "mdr_2dnav"):
+    def __init__(self, navigation_server = "/move_base/", config_package = "mcr_move_base_tools", config_folder="config"):
 
         rospy.init_node("dynamic_reconfigure_planners")
         self.navigation_server = navigation_server
@@ -32,7 +32,7 @@ class PlannerUpdater:
 
         #TODO Maybe not needed if config files are added
         rospack = rospkg.RosPack()
-        self.config_path = rospack.get_path(config_package)
+        self.config_path = rospack.get_path(config_package)+"/"+config_folder
 
         #Get planners information running rospack plugin on terminal/ Retunr Name/plugin path
         plugins = os.popen("rospack plugins --attrib=plugin nav_core").read()
@@ -98,12 +98,11 @@ class PlannerUpdater:
 
     def add_new_params(self, new_namespace):
         rospy.loginfo("Adding New Params")
-        param_file = self.config_path+'/'+ new_namespace + '.yaml'
+        param_file = self.config_path+'/'+new_namespace + '.yaml'
         new_config_file = rosparam.load_file(param_file)
 
         for params,ns in new_config_file:
-            print ns, params
-            rosparam.upload_params(navigation_server + ns,params)
+            rosparam.upload_params(self.navigation_server + ns,params)
 
     def update_planners(self, new_config, new_global_planner_ns=None, new_local_planner_ns=None):
         if new_global_planner_ns is not None:
@@ -111,6 +110,6 @@ class PlannerUpdater:
             self.add_new_params(new_global_planner_ns)
         if new_local_planner_ns is not None:
             self.delete_old_params(self.current_local_planner_name)
-            self.add_new_params(new_locbal_planner_ns)
+            self.add_new_params(new_local_planner_ns)
 
         self.dyn_client.update_configuration(new_config)
