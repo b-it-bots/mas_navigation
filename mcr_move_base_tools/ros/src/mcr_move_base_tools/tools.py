@@ -84,8 +84,7 @@ class PlannerUpdater:
             if n_t[2] == "nav_core::BaseLocalPlanner":
                 self.available_local_planners.append(n_t[0])
 
-        if mode_request is not None:
-            self.update_mode(mode_package, mode_file, mode_request)
+        self.update_mode(mode_package, mode_file, mode_request)
 
     def update_mode(self, mode_folder, mode_file, mode):
         rospack = rospkg.RosPack()
@@ -95,9 +94,18 @@ class PlannerUpdater:
         available_modes = dict()
         file_stream.close()
 
+        new_config = dict()
+
         for key, value in modes.iteritems():
             if key == mode_request:
-                print "REQUEST FOUND"
+                if value['global_planner']:
+                    new_config['global_planner'] = value['global_planner']
+                if value['local_planner']:
+                    new_config['local_planner'] = value['local_planner']
+
+        global_planner_ns = new_config["base_global_planner"].split('/')[0]
+        local_planner_ns = new_config["base_local_planner"].split('/')[0]
+        self.update_planners(new_config, new_global_planner_ns=global_planner_ns, new_local_planner_ns=local_planner_ns)
 
     def get_available_global_planners(self):
         return self.available_global_planners
