@@ -1,12 +1,13 @@
 import os
-from dynamic_reconfigure.client import Client
+import re
 import rospy
 import rosparam
-import re
 import rospkg
+import yaml
+from dynamic_reconfigure.client import Client
 
 class PlannerUpdater:
-    def __init__(self, navigation_server = "/move_base/", config_package = "mcr_move_base_tools", config_folder="config", mode_selector=True):
+    def __init__(self, navigation_server = "/move_base/", config_package = "mcr_move_base_tools", config_folder="config", mode_request = None, mode_package="mcr_move_base_tools", mode_file="ros/config/default.yaml"):
 
         rospy.init_node("dynamic_reconfigure_planners")
         self.navigation_server = navigation_server
@@ -83,11 +84,20 @@ class PlannerUpdater:
             if n_t[2] == "nav_core::BaseLocalPlanner":
                 self.available_local_planners.append(n_t[0])
 
-        if mode_selector:
-            self.load_modes()
+        if mode_request is not None:
+            self.update_mode(mode_package, mode_file, mode_request)
 
-    def load_modes(self):
-        pass
+    def update_mode(self, mode_folder, mode_file, mode):
+        rospack = rospkg.RosPack()
+        mode_file = rospack.get_path(mode_package)+"/"+mode_file
+        file_stream = file(mode_file, 'r')
+        modes = yaml.load(file_stream)
+        available_modes = dict()
+        file_stream.close()
+
+        for key, value in modes.iteritems():
+            if key == mode_request:
+                print "REQUEST FOUND"
 
     def get_available_global_planners(self):
         return self.available_global_planners
