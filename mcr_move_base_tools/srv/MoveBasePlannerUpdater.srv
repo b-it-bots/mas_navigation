@@ -1,4 +1,0 @@
-string required_global_planner
-string required_local_planner
----
-bool result

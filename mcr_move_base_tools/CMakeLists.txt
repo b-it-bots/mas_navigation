@@ -9,12 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_python_setup()
 
-add_service_files(
-   DIRECTORY srv
-)
-
-generate_messages()
-
 catkin_package(
  CATKIN_DEPENDS
    rospy
@@ -25,7 +19,6 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
-
 
 #install(PROGRAMS
   #ros/scripts
