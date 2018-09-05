@@ -16,10 +16,6 @@ catkin_package(
    dynamic_reconfigure
 )
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
-
 #install(PROGRAMS
   #ros/scripts
   #DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
