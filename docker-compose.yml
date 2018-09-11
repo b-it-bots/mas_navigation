@@ -1,0 +1,10 @@
+version: '2'
+services:
+  travis:
+    build:
+      dockerfile: .travis/Dockerfile
+      context: .
+    image: bitbots/bitbots-navigation:${TRAVIS_COMMIT}
+  navigation:
+    build: .
+    image: bitbots/bitbots-navigation:kinetic
