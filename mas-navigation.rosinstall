@@ -1,0 +1,9 @@
+- git:
+    local-name: mas_common_robotics
+    uri: https://github.com/b-it-bots/mas_common_robotics.git
+    version: kinetic
+
+- git:
+    local-name: mas_navigation
+    uri: https://github.com/b-it-bots/mas_navigation.git
+    version: kinetic
