@@ -1,7 +1,9 @@
 FROM bitbots/bitbots-common:kinetic
 
+LABEL maintainer="Argentina Ortega"
+
 WORKDIR /travis
-ADD ./ /travis/src/mas_navigation
+COPY ./ /travis/src/mas_navigation
 
 RUN . /opt/ros/mas_stable/setup.sh && \
     catkin config --init && \

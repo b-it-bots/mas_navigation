@@ -1,9 +1,11 @@
 FROM bitbots/bitbots-common:kinetic
 
+LABEL maintainer="Argentina Ortega"
+
 WORKDIR /kinetic
 COPY mas-navigation.rosinstall /kinetic
 
-ADD . /kinetic/src/mas_navigation
+COPY . /kinetic/src/mas_navigation
 
 RUN . /opt/ros/mas_stable/setup.sh && \
     apt-get update -qq && \
