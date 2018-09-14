@@ -25,12 +25,10 @@ class PlannerUpdater:
         #Getting Data of current planners
         #For Global Planner
         current_global_planner = rosparam.get_param(navigation_server + "base_global_planner")
-        current_global_planner_ns = current_global_planner.split('/')[0]
         self.current_global_planner_name = current_global_planner.split('/')[1]
 
         #For Local Planner
         current_local_planner = rosparam.get_param(navigation_server + "base_local_planner")
-        current_local_planner_ns = current_local_planner.split('/')[0]
         self.current_local_planner_name = current_local_planner.split('/')[1]
 
         #TODO Maybe not needed if config files are added
@@ -90,8 +88,7 @@ class PlannerUpdater:
         rospack = rospkg.RosPack()
         mode_file = rospack.get_path(mode_package)+"/"+mode_file
         file_stream = file(mode_file, 'r')
-        modes = yaml.load(file_stream)
-        available_modes = dict()
+        modes = yaml.load_safe(file_stream)
         file_stream.close()
 
         new_config = dict()
