@@ -1,9 +1,0 @@
-Default:
-  global_planner: global_planner/GlobalPlanner
-  local_planner: dwa_local_planner/DWAPlannerROS
-Follower:
-  global_planner: carrot_planner/CarrotPlanner
-  local_planner: dwa_local_planner/DWAPlannerROS
-Reactive:
-  global_planner: carrot_planner/CarrotPlanner
-  local_planner: eband_local_planner/EBandPlannerROS

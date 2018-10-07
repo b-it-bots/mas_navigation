@@ -7,7 +7,7 @@ import yaml
 from dynamic_reconfigure.client import Client
 
 class PlannerUpdater:
-    def __init__(self, navigation_server = "/move_base/", config_package = "mcr_move_base_tools", config_folder="config", mode_request = None, mode_package="mcr_move_base_tools", mode_file="ros/config/default.yaml"):
+    def __init__(self, navigation_server = "/move_base/", config_package = "mcr_move_base_tools", config_folder="ros/config", mode_request = None, cfg_file="config.yaml"):
 
         rospy.init_node("dynamic_reconfigure_planners")
         self.navigation_server = navigation_server
@@ -24,19 +24,34 @@ class PlannerUpdater:
 
         #Getting Data of current planners
         #For Global Planner
-        current_global_planner = rosparam.get_param(navigation_server + "base_global_planner")
-        self.current_global_planner_name = current_global_planner.split('/')[1]
+        self.current_global_planner = rosparam.get_param(navigation_server + "base_global_planner")
+        self.current_global_planner_name = self.current_global_planner.split('/')[1]
 
         #For Local Planner
-        current_local_planner = rosparam.get_param(navigation_server + "base_local_planner")
-        self.current_local_planner_name = current_local_planner.split('/')[1]
+        self.current_local_planner = rosparam.get_param(navigation_server + "base_local_planner")
+        self.current_local_planner_name = self.current_local_planner.split('/')[1]
 
+        self.load_available_plugins(config_package, config_folder, cfg_file)
+
+        if mode_request is not None:
+            self.update_mode(config_package, config_folder, cfg_file, mode_request)
+
+    def load_data(self,ros_pkg, config_folder, file_name, attribute):
+        rospack = rospkg.RosPack()
+        file_path = rospack.get_path(ros_pkg)+"/"+config_folder+"/"+file_name
+        file_stream = file(file_path, 'r')
+        data = yaml.load(file_stream)
+        file_stream.close()
+        return data[attribute]
+
+    def load_available_plugins(self, ros_config_package, config_folder, cfg_file):
         #TODO Maybe not needed if config files are added
         rospack = rospkg.RosPack()
-        self.config_path = rospack.get_path(config_package)+"/"+config_folder
+        self.config_path = rospack.get_path(ros_config_package)+"/"+config_folder
 
         #Get planners information running rospack plugin on terminal/ Retunr Name/plugin path
-        plugins = os.popen("rospack plugins --attrib=plugin nav_core").read()
+        cmd_plugin = self.load_data(ros_config_package, config_folder, cfg_file, "query")
+        plugins = os.popen(cmd_plugin).read()
         plugins = plugins.splitlines()
 
         plugin_name_type = list()
@@ -82,23 +97,21 @@ class PlannerUpdater:
             if n_t[2] == "nav_core::BaseLocalPlanner":
                 self.available_local_planners.append(n_t[0])
 
-        self.update_mode(mode_package, mode_file, mode_request)
+    def update_mode(self, ros_mode_pkg, config_folder, mode_file, requested_mode):
 
-    def update_mode(self, mode_folder, mode_file, mode):
-        rospack = rospkg.RosPack()
-        mode_file = rospack.get_path(mode_package)+"/"+mode_file
-        file_stream = file(mode_file, 'r')
-        modes = yaml.load_safe(file_stream)
-        file_stream.close()
+        modes = self.load_data(ros_mode_pkg, config_folder, mode_file, "modes")
 
         new_config = dict()
+        new_config["base_global_planner"] = self.current_global_planner 
+        new_config["base_local_planner"] = self.current_local_planner
+
 
         for key, value in modes.iteritems():
-            if key == mode_request:
+            if key == requested_mode:
                 if value['global_planner']:
-                    new_config['global_planner'] = value['global_planner']
+                    new_config['base_global_planner'] = value['global_planner']
                 if value['local_planner']:
-                    new_config['local_planner'] = value['local_planner']
+                    new_config['base_local_planner'] = value['local_planner']
 
         global_planner_ns = new_config["base_global_planner"].split('/')[0]
         local_planner_ns = new_config["base_local_planner"].split('/')[0]
@@ -127,6 +140,10 @@ class PlannerUpdater:
             rosparam.upload_params(self.navigation_server + ns,params)
 
     def update_planners(self, new_config, new_global_planner_ns=None, new_local_planner_ns=None):
+        if new_config["base_global_planner"] not in self.available_global_planners or new_config["base_local_planner"] not in self.available_local_planners:
+            rospy.logerr("One of the desired planners is not on the system")
+            return
+
         if new_global_planner_ns is not None:
             self.delete_old_params(self.current_global_planner_name)
             self.add_new_params(new_global_planner_ns)

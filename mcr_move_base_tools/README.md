@@ -14,11 +14,11 @@ Class Constructor Params:
 1. navigation_server: Navigation manager server name, default "/move_base/".
 2. config_package: set the package where planners config fiels are located, default "mcr_move_base_tools".
 3. config_folder: set the folder inside the config_package where the planners config files are located, default "config".
+4. cfg_file: set the path to the file where the cfg inside the cfg_package where the modes and plugins query are defined, default "ros/config/default.yaml").
 
 Just Needed if mode selection is requested.
 4. mode_request: name of requested mode, default None.
 5. mode_package: set the package where mode config file is located, default "mcr_move_base_tools".
-6. mode_file: set the path to the file inside the mode_package where the mode_config file is, default "ros/config/default.yaml").
 
 Assumptions:
 
