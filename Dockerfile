@@ -5,6 +5,14 @@ LABEL maintainer="Argentina Ortega"
 WORKDIR /kinetic
 COPY mas-navigation.rosinstall /kinetic
 
+RUN wstool init --shallow src && \
+    wstool merge -t src mas-navigation.rosinstall && \
+    cd src && \
+    wstool remove mas_navigation && \
+    cd - && \
+    wstool update -t src
+
+
 COPY . /kinetic/src/mas_navigation
 
 RUN . /opt/ros/mas_stable/setup.sh && \

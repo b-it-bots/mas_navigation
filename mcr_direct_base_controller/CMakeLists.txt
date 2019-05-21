@@ -30,7 +30,7 @@ catkin_package(
     mcr_twist_limiter
     mcr_twist_synchronizer
     mcr_manipulation_measurers
-    mcr_navigation_tools
+    mas_navigation_tools
 )
 
 include_directories(
