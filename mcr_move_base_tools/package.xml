@@ -1,0 +1,23 @@
+<package>
+  <name>mcr_move_base_tools</name>
+  <version>0.0.1</version>
+
+  <description>
+     Collection of tools to modify move_base standard behavior
+  </description>
+
+  <author email="jose.mayoral@smail.inf.h-brs.de">Jose Mayoral</author>
+
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend>rospy</build_depend>
+
+  <run_depend>dynamic_reconfigure</run_depend>
+  <run_depend>rospy</run_depend>
+
+</package>
