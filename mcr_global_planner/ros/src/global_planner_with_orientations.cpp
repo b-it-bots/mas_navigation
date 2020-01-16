@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <mcr_global_planner/global_planner_with_orientations.h>
+#include <tf/transform_datatypes.h>
 #include <geometry_msgs/PoseArray.h>
 #include <pluginlib/class_list_macros.h>
 
