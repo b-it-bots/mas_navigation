@@ -8,7 +8,7 @@
 #include <limits>
 
 // Register this planner as a RecoveryBehavior plugin
-PLUGINLIB_DECLARE_CLASS(force_field_recovery, ForceFieldRecovery, force_field_recovery::ForceFieldRecovery,
+PLUGINLIB_EXPORT_CLASS(force_field_recovery::ForceFieldRecovery,
                         nav_core::RecoveryBehavior)
 
 using costmap_2d::NO_INFORMATION;
@@ -16,18 +16,20 @@ using costmap_2d::NO_INFORMATION;
 namespace force_field_recovery
 {
 ForceFieldRecovery::ForceFieldRecovery(): global_costmap_(NULL), local_costmap_(NULL),
-    tf_(NULL), initialized_(NULL), is_oscillation_detection_initialized_(false),
+    tf_listener_(NULL), tf_buffer_(NULL), initialized_(NULL), is_oscillation_detection_initialized_(false),
     previous_angle_(0.0), allowed_oscillations_(0), number_of_oscillations_(0)
 {}
 
-void ForceFieldRecovery::initialize(std::string name, tf::TransformListener* tf,
+void ForceFieldRecovery::initialize(std::string name, tf2_ros::Buffer* tf_buffer,
                                     costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap)
 {
     // initialization, this code will be executed only once
     if (!initialized_)
     {
         // receiving move_base variables and copying them over to class variables
-        tf_ = tf;
+        tf_listener_ = new tf2_ros::TransformListener(*tf_buffer);
+        tf_buffer_ = tf_buffer;
+
         global_costmap_ = global_costmap;
         local_costmap_ = local_costmap;
         // robot_base_frame_ commonly can be base_footprint frame
@@ -254,19 +256,10 @@ pcl::PointCloud<pcl::PointXYZ> ForceFieldRecovery::changeCloudReferenceFrame(sen
     // convert from rospcl to pcl
     pcl::fromROSMsg(ros_cloud, cloud_in);
 
-    // STEP 1 Convert xb3 message to center_bumper frame (i think it is better this way)
-    tf::StampedTransform transform;
-    try
+    if (!pcl_ros::transformPointCloud(target_reference_frame, cloud_in, cloud_trans, *tf_buffer_))
     {
-        tf_->lookupTransform(target_reference_frame, ros_cloud.header.frame_id, ros::Time(0), transform);
+        ROS_ERROR("Failed to transform to %s", target_reference_frame.c_str());
     }
-    catch (tf::TransformException ex)
-    {
-        ROS_ERROR("%s", ex.what());
-    }
-
-    // Transform point cloud
-    pcl_ros::transformPointCloud(cloud_in, cloud_trans, transform);
 
     return cloud_trans;
 }
