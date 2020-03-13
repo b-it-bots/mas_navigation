@@ -76,7 +76,7 @@ public:
     * @param global_costmap A pointer to the global_costmap used by the navigation stack
     * @param local_costmap A pointer to the local_costmap used by the navigation stack
     */
-    void initialize(std::string name, tf::TransformListener* tf,
+    void initialize(std::string name, tf2_ros::Buffer* tf2_buffer,
                     costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap);
 
     /**
@@ -193,7 +193,8 @@ private:
     bool is_oscillation_detection_initialized_;
 
     // A pointer to the transform listener sent by move_base
-    tf::TransformListener* tf_;
+    tf2_ros::Buffer* tf_buffer_;
+    tf2_ros::TransformListener* tf_listener_;
 
     // Pointers to receive the costmaps from move_base
     costmap_2d::Costmap2DROS* global_costmap_, *local_costmap_;
