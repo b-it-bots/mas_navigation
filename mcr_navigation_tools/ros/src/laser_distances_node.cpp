@@ -240,9 +240,9 @@ void LaserDistances::update()
 
         // right
         min_pt[0] = footprint_.points[0].x;
-        min_pt[1] = footprint_.points[3].y;
+        min_pt[1] = footprint_.points[3].y - 10.0;
         max_pt[0] = footprint_.points[3].x;
-        max_pt[1] = footprint_.points[3].y - 10.0;
+        max_pt[1] = footprint_.points[3].y;
         pcl::getPointsInBox(laser_scans_as_pcl_cloud, min_pt, max_pt, indices);
         float right_distance = std::abs(getMaxY(laser_scans_as_pcl_cloud, indices)) - (width / 2.0);
 
