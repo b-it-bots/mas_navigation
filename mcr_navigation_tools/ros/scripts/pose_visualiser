@@ -54,7 +54,7 @@ class PoseVisualiser(object):
         self.pose_text_publisher.publish(marker_array_text)
 
     def load_poses(self):
-        stream = file(self.pose_description_file, 'r')
+        stream = open(self.pose_description_file, 'r')
         poses = yaml.load(stream)
         stream.close()
         return poses
