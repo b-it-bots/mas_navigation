@@ -27,7 +27,6 @@ void ForceFieldRecovery::initialize(std::string name, tf2_ros::Buffer* tf_buffer
     if (!initialized_)
     {
         // receiving move_base variables and copying them over to class variables
-        tf_listener_ = new tf2_ros::TransformListener(*tf_buffer);
         tf_buffer_ = tf_buffer;
 
         global_costmap_ = global_costmap;
